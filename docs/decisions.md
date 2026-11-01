@@ -48,6 +48,14 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 
 **Docs as agent context.** `docs/` holds intent and rationale only; anything readable from code (fields, payloads) is linked, never duplicated. Behavior changes must update the matching doc.
 
+**Concierge and member UI follow the Claude Design, Solar Flare theme only.** One theme keeps the token set small; the design's other three themes were left out. Details in [design.md](design.md).
+
+**Quick-add parsing is a pure function with tests.** The palette's text parser lives in `src/lib/proposals/quick-add.ts`. It matches full weekday and month names only (the design's prefix match read "sunset" as Sunday).
+
+**Member status changes wait for the server before the final animation.** Approve and Pay update the badge optimistically, but the confirmation screen appears only after the PATCH succeeds, so a rollback never leaves the member on a "confirmed" page.
+
+**Builder state is a local working copy, re-seeded only when the reservation or proposal changes.** Edits stay in memory until "Save draft" or "Send" (which saves first); one dirty flag drives the discard confirm. No effects: the copy resets by comparing a source key during render.
+
 ## Assumptions
 
 - _Assumption:_ trip year is 2027 so seeded stays are upcoming.

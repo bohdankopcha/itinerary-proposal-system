@@ -35,4 +35,8 @@ A reservation may have several proposals (alternatives or revisions). The dashbo
 
 ## Seed
 
-`prisma/seed.ts`, idempotent (upserts with fixed ids): the members and reservations from [product.md](product.md). It seeds no proposals, so the first run shows the empty state.
+`prisma/seed.ts`, idempotent (upserts with fixed ids): the members and reservations from [product.md](product.md), plus one draft proposal per reservation (data in `prisma/seed-proposals.ts`).
+
+Proposals are created only if their id is missing and never overwritten, so `npm run dev` does not undo edits or status changes made in the UI. To get the original data back, run `npm run db:reset`.
+
+James's proposal is the demo itinerary: 2-4 items on most days, one packed day (6 items) and one deliberately empty day, so the timeline and planner show both extremes. The other two have 2-3 items per day.
