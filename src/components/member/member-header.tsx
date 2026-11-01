@@ -25,7 +25,9 @@ export const MemberHeader = ({
       <StatusBadge
         status={status}
         label={MEMBER_STATUS_LABELS[status]}
-        className="bg-card backdrop-blur-md"
+        className={
+          status === "paid" ? "backdrop-blur-md" : "bg-card backdrop-blur-md"
+        }
       />
       <h1 className="mt-4 mb-2 text-6xl leading-[0.9] font-semibold tracking-tighter sm:text-7xl">
         {place}
