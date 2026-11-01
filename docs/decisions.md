@@ -36,6 +36,16 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 
 **Contracts as zod schemas, shared by server and client.** One definition per payload; types via `z.infer`. Docs link to them instead of copying.
 
+**`PATCH` accepts all four statuses syntactically; the domain rejects `sent`.** `status: "sent"` is a valid enum value but an illegal move via `PATCH`, so it returns `409 INVALID_TRANSITION` (as the lifecycle doc requires); only unknown or missing values are `400`.
+
+**Conditional writes instead of locks.** Every transition and edit is `updateMany({ where: { id, status: from } })`; zero rows means the state changed under us. Send does this write first inside its transaction and rolls back on `EMPTY_PROPOSAL`, so the check and the write cannot interleave with an edit. Covered by a concurrent-approve test.
+
+**Categories and statuses are lowercase string values** (`dining`, `draft`, ...) defined once in `src/lib/schemas/proposal.ts` and validated at the boundary and when reading rows. No DB enums, so the list has one definition.
+
+**API dates:** reservation dates are `YYYY-MM-DD`; timestamps and `scheduledAt` are ISO strings ending in `Z`, with `scheduledAt` read as resort wall-clock (see data-model.md).
+
+**API tests call the real route handlers** against a throwaway SQLite file (`test.db`, migrated and seeded by `vitest.global-setup.ts`), asserting both responses and DB rows.
+
 **Docs as agent context.** `docs/` holds intent and rationale only; anything readable from code (fields, payloads) is linked, never duplicated. Behavior changes must update the matching doc.
 
 ## Assumptions
@@ -53,4 +63,5 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 - Proposal cancel/expire and re-send; edit history.
 - Managing members and reservations from the UI.
 - Item catalog with default prices; multi-currency.
+- Pagination for the proposals list.
 - E2E tests (Playwright) for the full loop; currently unit and API-level tests.

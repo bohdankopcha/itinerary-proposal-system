@@ -20,6 +20,9 @@ Notes:
 - `POST` takes the reservation id, an optional `notes`, and an `items` array (at least one). The dashboard builds items in local state, then "Save draft" posts them. "Send" saves first if needed (POST or PUT), then calls `/send`.
 - `PUT`, `PATCH`, and `/send` return the updated proposal in the same shape as `GET /api/proposals/[id]`. `/send` also returns the created sent-email record.
 - Transition rules, preconditions, and side effects: [proposal-lifecycle.md](proposal-lifecycle.md).
+- `GET /api/proposals?reservationId=` with an unknown id is `404`, not an empty list, so a stale URL is noticed.
+- Check order on `PUT`: unknown id (404), then `NOT_EDITABLE`, then item validation. A body that fails the zod schema is `400` before any of these.
+- `GET /api/reservations` takes no request data, so under Cache Components it would be prerendered at build time; it calls `connection()` to stay request-time. Any future `GET` handler without request data needs the same.
 
 ## Conventions
 

@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: project-code-review
 description: Review the current diff or branch against this repo's rules. Runs lint, typecheck, tests, and build, then checks the diff against AGENTS.md conventions, API route validation, state machine tests, stray console.log, mobile viewport, and unneeded dependencies. Use when the user asks to review, check, or verify changes, or before opening a PR.
 ---
 
