@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -46,33 +46,208 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-field: var(--field);
+  --color-panel-border: var(--panel-border);
+  --color-scrim: var(--scrim);
+  --color-status-sent: var(--status-sent);
+  --color-status-approved: var(--status-approved);
+  --color-category-dining: var(--category-dining);
+  --color-category-activities: var(--category-activities);
+  --color-category-wellness: var(--category-wellness);
+  --color-category-excursions: var(--category-excursions);
+  --color-category-transport: var(--category-transport);
+  --color-category-experiences: var(--category-experiences);
+  --color-pass-dining: var(--pass-dining);
+  --color-pass-activities: var(--pass-activities);
+  --color-pass-wellness: var(--pass-wellness);
+  --color-pass-excursions: var(--pass-excursions);
+  --color-pass-transport: var(--pass-transport);
+  --color-pass-experiences: var(--pass-experiences);
+  --color-trip-from: var(--trip-from);
+  --color-trip-via: var(--trip-via);
+  --color-trip-to: var(--trip-to);
+  --shadow-panel: var(--panel-shadow);
+  --animate-rise: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pass-in: pass-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-from-right: from-right 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-from-left: from-left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-collapse-up: collapse-up 0.62s cubic-bezier(0.6, 0, 0.4, 1) both;
+  --animate-trip-in: trip-in 0.7s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  --animate-shine: shine 1.4s 0.35s ease both;
+  --animate-stamp-in: stamp-in 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  --animate-pop-in: pop-in 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  --animate-word-in: word-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-soft-in: soft-in 0.8s ease both;
+  --animate-pin-in: pin-in 0.55s 1.6s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  --animate-ping-out: ping-out 2.6s 2s ease-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pass-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes from-right {
+    from {
+      opacity: 0;
+      transform: translateX(36px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes from-left {
+    from {
+      opacity: 0;
+      transform: translateX(-36px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes collapse-up {
+    0%,
+    60% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-60px) scale(0.9);
+    }
+  }
+  @keyframes trip-in {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes shine {
+    from {
+      left: -60%;
+    }
+    to {
+      left: 130%;
+    }
+  }
+  @keyframes stamp-in {
+    from {
+      opacity: 0;
+      transform: scale(1.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes word-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+  }
+  @keyframes soft-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pin-in {
+    from {
+      opacity: 0;
+      transform: scale(0);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes ping-out {
+    0% {
+      opacity: 0.9;
+      transform: scale(0.4);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.8);
+    }
+  }
+  --animate-ambient-drift: ambient-drift 38s ease-in-out infinite alternate;
+  --animate-ambient-drift-slow: ambient-drift 52s ease-in-out infinite
+    alternate-reverse;
+
+  @keyframes ambient-drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-3%, 2%, 0) scale(1.05);
+    }
+  }
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #fff5ee;
+  --foreground: #2a0f08;
+  --card: rgb(255 255 255 / 0.58);
+  --card-foreground: #2a0f08;
+  --popover: rgb(255 250 246 / 0.98);
+  --popover-foreground: #2a0f08;
+  --primary: #b8320b;
+  --primary-foreground: #ffffff;
+  --secondary: rgb(90 25 10 / 0.06);
+  --secondary-foreground: #2a0f08;
+  --muted: rgb(90 25 10 / 0.06);
+  --muted-foreground: #6e3524;
+  --accent: rgb(255 90 31 / 0.14);
+  --accent-foreground: #2a0f08;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: rgb(90 25 10 / 0.09);
+  --input: rgb(90 25 10 / 0.18);
+  --ring: #b8320b;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -81,6 +256,41 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --field: rgb(255 255 255 / 0.75);
+  --panel-border: rgb(255 255 255 / 0.85);
+  --panel-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    0 30px 60px -36px rgb(160 30 10 / 0.45);
+  --scrim: rgb(60 10 0 / 0.22);
+
+  --status-sent: #ff2e63;
+  --status-approved: #ff8a00;
+
+  --category-dining: #ff2e63;
+  --category-activities: #ff5a1f;
+  --category-wellness: #ffb020;
+  --category-excursions: #c2185b;
+  --category-transport: #ff8a00;
+  --category-experiences: #e0400f;
+
+  --pass-dining: #b3123f;
+  --pass-activities: #b8320b;
+  --pass-wellness: #9a4a06;
+  --pass-excursions: #9c1f4a;
+  --pass-transport: #a33a0a;
+  --pass-experiences: #8f2a12;
+  --trip-from: #a80f3c;
+  --trip-via: #c2300c;
+  --trip-to: #b85a06;
+
+  --ambient-warm:
+    radial-gradient(38% 34% at 10% 6%, rgb(255 176 32 / 0.26), transparent 70%),
+    radial-gradient(44% 40% at 90% 92%, rgb(255 138 0 / 0.2), transparent 70%),
+    radial-gradient(36% 32% at 8% 88%, rgb(255 90 31 / 0.12), transparent 70%);
+  --ambient-rose:
+    radial-gradient(40% 36% at 88% 12%, rgb(255 46 99 / 0.15), transparent 70%),
+    radial-gradient(30% 28% at 52% 52%, rgb(255 176 32 / 0.08), transparent 70%);
 }
 
 .dark {
@@ -126,5 +336,50 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .draw-check {
+    stroke-dasharray: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .draw-check {
+      stroke-dashoffset: 1;
+      animation: draw-check 0.5s 0.25s ease forwards;
+    }
+  }
+  @keyframes draw-check {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+@layer utilities {
+  .svg-center {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .draw-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw-path 1.8s 0.3s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+  }
+  @keyframes draw-path {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
