@@ -63,7 +63,7 @@ export const PlannerDayColumn = ({
 
   return (
     <div
-      className={cn("relative border-l", ghost && "bg-accent")}
+      className={cn("relative isolate border-l", ghost && "bg-accent")}
       onDoubleClick={handleDoubleClick}
       onDragOver={(event) => drag.overDay(date, event)}
       onDrop={(event) => drag.dropOnDay(date, event)}

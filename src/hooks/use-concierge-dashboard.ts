@@ -104,6 +104,13 @@ export function useConciergeDashboard() {
       if (proposalId === null) builder.reset();
       params.update({ proposal: NEW_PROPOSAL, view: null });
     });
+  const requestDiscard = () => {
+    if (!builder.dirty) return;
+    setPendingNavigation(() => () => {
+      actions.clearNotice();
+      builder.revert();
+    });
+  };
   const canSend = !locked && items.length > 0 && !actions.isPending;
 
   const palette = useCommandPalette({
@@ -153,6 +160,7 @@ export function useConciergeDashboard() {
     setView,
     selectReservation,
     startNewProposal,
+    requestDiscard,
     openProposal: (reservationId: string, id: string) =>
       guarded(() =>
         params.update({ reservation: reservationId, proposal: id, view: null }),

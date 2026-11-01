@@ -54,7 +54,7 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 
 **Member status changes wait for the server before the final animation.** Approve and Pay update the badge optimistically, but the confirmation screen appears only after the PATCH succeeds, so a rollback never leaves the member on a "confirmed" page.
 
-**Builder state is a local working copy, re-seeded only when the reservation or proposal changes.** Edits stay in memory until "Save draft" or "Send" (which saves first); one dirty flag drives the discard confirm. No effects: the copy resets by comparing a source key during render.
+**Builder state is a local working copy, re-seeded only when the reservation or proposal changes.** Edits stay in memory until "Save draft" or "Send" (which saves first); one dirty flag drives the discard confirm, the "Unsaved changes" / "All changes saved" cue, and whether Save draft and Discard changes are active or shown. Discard reverts the working copy to the last saved proposal (it no longer navigates to a new proposal; "New proposal" does that). No effects: the copy resets by comparing a source key during render.
 
 ## Assumptions
 

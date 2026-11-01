@@ -82,6 +82,9 @@ export function useDraftBuilder({
     reset() {
       setState(fromProposal(sourceKey));
     },
+    revert() {
+      setState(fromProposal(sourceKey, proposal));
+    },
   };
 }
 

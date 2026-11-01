@@ -71,7 +71,8 @@ export function ItineraryView({
                 actions={d.actions}
                 onNotesChange={d.builder.setNotes}
                 onPreview={() => d.setPreviewOpen(true)}
-                onCancelEditing={d.startNewProposal}
+                dirty={d.builder.dirty}
+                onDiscard={d.requestDiscard}
               />
             </div>
           </>

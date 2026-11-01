@@ -47,7 +47,6 @@ export function useProposalActions({
     setNotice(null);
     try {
       await persist();
-      setNotice({ tone: "success", message: "Draft saved" });
     } catch (error) {
       setNotice({ tone: "error", message: errorMessage(error) });
     }

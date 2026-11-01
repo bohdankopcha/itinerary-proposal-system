@@ -112,7 +112,7 @@ export function WeekPlanner({
             gridTemplateColumns: `3.5rem repeat(${visible.length}, minmax(7.5rem, 1fr))`,
           }}
         >
-          <div className="bg-popover sticky top-0 left-0 z-20 border-b" />
+          <div className="bg-popover sticky top-0 left-0 z-40 border-b" />
           {visible.map((day) => (
             <PlannerDayHeader
               key={day.date}
@@ -127,7 +127,7 @@ export function WeekPlanner({
               empty={day.items.length === 0}
             />
           ))}
-          <div className="bg-popover sticky left-0 z-10 flex flex-col">
+          <div className="bg-popover sticky left-0 z-20 flex flex-col">
             {CALENDAR_HOURS.map((hour, index) => (
               <div
                 key={hour}

@@ -12,7 +12,7 @@ export function PlannerDayHeader({
 }) {
   const { weekday, day, month } = dateParts(date);
   return (
-    <div className="bg-popover sticky top-0 z-10 flex min-w-0 flex-col gap-1 border-b border-l px-3 py-2.5">
+    <div className="bg-popover sticky top-0 z-30 flex min-w-0 flex-col gap-1 border-b border-l px-3 py-2.5">
       <div className="flex min-h-5 items-center justify-between gap-1.5">
         <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
           {weekday}

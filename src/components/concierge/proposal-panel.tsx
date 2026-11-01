@@ -38,7 +38,8 @@ export function ProposalPanel({
   actions,
   onNotesChange,
   onPreview,
-  onCancelEditing,
+  dirty,
+  onDiscard,
 }: {
   reservation: Reservation;
   proposal: Proposal | undefined;
@@ -49,7 +50,8 @@ export function ProposalPanel({
   actions: ProposalActions;
   onNotesChange: (notes: string) => void;
   onPreview: () => void;
-  onCancelEditing: () => void;
+  dirty: boolean;
+  onDiscard: () => void;
 }) {
   const locked = status !== "draft";
   const total = totalCents(items);
@@ -59,6 +61,12 @@ export function ProposalPanel({
   ).length;
   const planned = plannedDayCount(items, reservation.arrivalDate);
   const firstName = reservation.member.name.split(" ")[0];
+  const draftCue = dirty
+    ? "Unsaved changes: only on this screen until you save"
+    : proposalId === null
+      ? "New draft: nothing saved yet"
+      : "All changes saved";
+  const canSave = dirty && items.length > 0 && !actions.isPending;
   const canSend = !locked && items.length > 0 && !actions.isPending;
 
   return (
@@ -78,15 +86,6 @@ export function ProposalPanel({
         </div>
         <StatusBadge status={status} />
       </div>
-      {proposalId !== null && !locked && (
-        <Button
-          variant="outline"
-          className="border-input"
-          onClick={onCancelEditing}
-        >
-          Cancel editing
-        </Button>
-      )}
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="proposal-note">Personal note to {firstName}</Label>
@@ -138,25 +137,34 @@ export function ProposalPanel({
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <div className="flex gap-2.5">
-          <Button
-            variant="outline"
-            className="border-input flex-1"
-            onClick={onPreview}
-          >
-            Preview
-          </Button>
-          {!locked && (
+        {!locked && (
+          <>
+            <p
+              className={cn(
+                "text-sm",
+                dirty ? "text-foreground font-medium" : "text-muted-foreground",
+              )}
+            >
+              {draftCue}
+            </p>
             <Button
               variant="outline"
-              className="border-input flex-1"
-              disabled={items.length === 0 || actions.isPending}
+              className="border-input"
+              disabled={!canSave}
               onClick={actions.save}
             >
               Save draft
             </Button>
-          )}
-        </div>
+            {dirty && (
+              <Button variant="ghost" onClick={onDiscard}>
+                Discard changes
+              </Button>
+            )}
+          </>
+        )}
+        <Button variant="outline" className="border-input" onClick={onPreview}>
+          Preview
+        </Button>
         <Button disabled={!canSend} onClick={actions.send}>
           {locked
             ? STATUS_LABELS[status]

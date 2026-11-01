@@ -23,8 +23,10 @@ Two intentionally different views in one app. Tokens live in `src/app/globals.cs
 - **Reservation switcher:** at the very top; lists each reservation as member name, destination, dates. Selection is stored in the URL (`?reservation=<id>`); default is the earliest arrival. Switching swaps the trip header, builder, and list; unsaved builder content is discarded after a confirm.
 - **Trip header:** destination, villa, member name, arrival, departure, nights. Always visible and prominent.
 - **Layout (desktop):** two tabs. Itinerary: trip header, then week planner (left) and proposal panel (right). Proposals: list of all proposals. On mobile the planner and panel stack.
+- **Planner stacking:** each day column is an isolated stacking context, so blocks, flight pills and the now-line (z-10/z-20 inside) never leave it. Sticky layers sit above: time gutter z-20, day headers z-30, corner z-40.
 - **Builder:** six category cards (color dot + name) as the entry point; selecting one opens a form (title, description, date/time constrained to the trip, price). Items appear as blocks in the week planner with edit/remove; the panel has a running total, a note field, and **Preview**, **Save draft**, **Send** actions. Send is disabled with no items.
-- **Edit mode:** choosing a draft in the list loads it into the builder with a visible "Editing draft" state and a way to cancel. Non-draft rows open read-only preview instead.
+- **Edit mode:** choosing a draft in the list loads it into the builder with a visible "Editing draft" state.
+- **Saved vs local:** edits live only on the screen until saved. The panel shows one cue: "Unsaved changes" (when dirty), "All changes saved" (clean), or "New draft: nothing saved yet". Actions stack in this order: **Save draft** (disabled unless dirty and non-empty), **Discard changes** (ghost, directly below Save, only when dirty; opens the discard confirm and reverts to the last saved version), **Preview**, **Send**. Save success has no toast or notice; the cue flipping to "All changes saved" is the feedback. Non-draft rows open read-only preview instead.
 - **Preview:** the shared proposal component in a dialog or sheet.
 - **Send success:** dialog naming the recipient and showing the sent email; the proposal stays open, locked, with status `sent`.
 - **Proposals list:** row per proposal across all clients: client, stay, dates, item count, total, status badge, last activity. Empty state invites the first proposal.
@@ -71,7 +73,7 @@ Source: Claude Design canvas "Concierge Itinerary Proposal" (boards `Concierge Â
 - Send success is a dialog showing the server's email record; afterwards the proposal stays open, locked and read only (the builder does not reset). Starting another proposal goes through the Proposals tab.
 - No toasts: save results and errors show inline in the proposal panel.
 - Opening a draft from the list sets `?proposal=<id>` and shows "Editing draft"; a non-draft opens locked in the same planner.
-- With no `proposal` param the planner opens the reservation's newest draft, so the seeded itinerary is visible straight away. `?proposal=new` is the explicit empty builder (used by "Cancel editing", the palette and the empty state of a reservation without drafts).
+- With no `proposal` param the planner opens the reservation's newest draft, so the seeded itinerary is visible straight away. `?proposal=new` is the explicit empty builder (used by the palette and the empty state of a reservation without drafts).
 - Unsaved builder content is guarded by one confirm dialog on reservation switch, opening another proposal, or starting a new one.
 
 **Concierge shortcuts:**
