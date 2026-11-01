@@ -1,6 +1,6 @@
 import { Panel } from "@/components/panel";
 
-export function EmptyState({
+export const EmptyState = ({
   title,
   description,
   children,
@@ -8,7 +8,7 @@ export function EmptyState({
   title: string;
   description: string;
   children?: React.ReactNode;
-}) {
+}) => {
   return (
     <Panel className="mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center">
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
@@ -16,4 +16,4 @@ export function EmptyState({
       {children}
     </Panel>
   );
-}
+};

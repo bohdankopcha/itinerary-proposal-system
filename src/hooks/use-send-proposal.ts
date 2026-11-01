@@ -6,7 +6,7 @@ import { proposalSchema } from "@/lib/schemas/proposal";
 import { applyOptimisticStatus } from "./optimistic-status";
 import { queryKeys } from "./query-keys";
 
-export function useSendProposal() {
+export const useSendProposal = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -29,4 +29,4 @@ export function useSendProposal() {
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.proposals }),
   });
-}
+};

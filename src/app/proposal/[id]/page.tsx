@@ -10,20 +10,16 @@ export const metadata: Metadata = {
   description: "Review, approve and lock in your private itinerary.",
 };
 
-async function ProposalContent({
+const ProposalContent = async ({
   params,
 }: {
   params: Promise<{ id: string }>;
-}) {
+}) => {
   const { id } = await params;
   return <MemberProposal id={id} />;
-}
+};
 
-export default function ProposalPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+const ProposalPage = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <Suspense
       fallback={
@@ -35,4 +31,6 @@ export default function ProposalPage({
       <ProposalContent params={params} />
     </Suspense>
   );
-}
+};
+
+export default ProposalPage;

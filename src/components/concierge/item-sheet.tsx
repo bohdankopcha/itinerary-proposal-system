@@ -27,13 +27,13 @@ import { toTimeInput, tripDates } from "@/lib/proposals/trip-days";
 import type { Reservation } from "@/lib/schemas/reservation";
 import { cn } from "@/lib/utils";
 
-export function ItemSheet({
+export const ItemSheet = ({
   editor,
   reservation,
 }: {
   editor: ItemEditor;
   reservation: Reservation;
-}) {
+}) => {
   const sheet = editor.sheet;
   const form = sheet?.form;
   const dateItems = tripDates(
@@ -41,16 +41,18 @@ export function ItemSheet({
     reservation.departureDate,
   ).map((date) => ({ value: date, label: formatDayLong(date) }));
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    editor.submit();
+  };
+
   return (
     <Sheet open={!!sheet} onOpenChange={(open) => !open && editor.close()}>
       <SheetContent className="w-full sm:max-w-md">
         {sheet && form && (
           <form
             className="flex min-h-0 flex-1 flex-col"
-            onSubmit={(event) => {
-              event.preventDefault();
-              editor.submit();
-            }}
+            onSubmit={handleSubmit}
           >
             <SheetHeader>
               <Eyebrow>
@@ -251,4 +253,4 @@ export function ItemSheet({
       </SheetContent>
     </Sheet>
   );
-}
+};

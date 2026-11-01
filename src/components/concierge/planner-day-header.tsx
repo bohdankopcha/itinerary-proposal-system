@@ -1,7 +1,7 @@
 import { dateParts } from "@/lib/proposals/format";
 import { cn } from "@/lib/utils";
 
-export function PlannerDayHeader({
+export const PlannerDayHeader = ({
   date,
   tag,
   empty,
@@ -9,7 +9,7 @@ export function PlannerDayHeader({
   date: string;
   tag: string | null;
   empty: boolean;
-}) {
+}) => {
   const { weekday, day, month } = dateParts(date);
   return (
     <div className="bg-popover sticky top-0 z-30 flex min-w-0 flex-col gap-1 border-b border-l px-3 py-2.5">
@@ -38,4 +38,4 @@ export function PlannerDayHeader({
       </div>
     </div>
   );
-}
+};

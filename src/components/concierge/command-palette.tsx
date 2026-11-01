@@ -10,7 +10,7 @@ const TOKEN_STYLES = {
   bad: "border border-dashed border-primary",
 };
 
-export function CommandPalette({ palette }: { palette: Palette }) {
+export const CommandPalette = ({ palette }: { palette: Palette }) => {
   const activeId = palette.options[palette.activeIndex]?.id;
 
   return (
@@ -124,4 +124,4 @@ export function CommandPalette({ palette }: { palette: Palette }) {
       </DialogContent>
     </Dialog>
   );
-}
+};

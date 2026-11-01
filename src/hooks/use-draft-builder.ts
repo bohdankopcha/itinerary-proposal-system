@@ -28,7 +28,7 @@ const fromProposal = (
  * Local working copy of the proposal being built. It is re-seeded whenever the
  * selected reservation or proposal changes, never while the same one stays open.
  */
-export function useDraftBuilder({
+export const useDraftBuilder = ({
   reservationId,
   proposalId,
   proposal,
@@ -36,7 +36,7 @@ export function useDraftBuilder({
   reservationId: string;
   proposalId: string | null;
   proposal: Proposal | undefined;
-}) {
+}) => {
   const sourceKey = `${reservationId}:${proposalId ?? "new"}`;
   const ready = proposalId === null || proposal !== undefined;
 
@@ -48,44 +48,47 @@ export function useDraftBuilder({
     setState(fromProposal(sourceKey, proposal));
   }
 
-  function edit(change: (current: BuilderState) => Partial<BuilderState>) {
+  const edit = (change: (current: BuilderState) => Partial<BuilderState>) =>
     setState((current) => ({ ...current, ...change(current), dirty: true }));
-  }
+
+  const addItem = (item: Omit<DraftItem, "key">) => {
+    const key = newDraftKey();
+    edit((current) => ({ items: [...current.items, { ...item, key }] }));
+    return key;
+  };
+
+  const updateItem = (key: string, item: Omit<DraftItem, "key">) =>
+    edit((current) => ({
+      items: current.items.map((existing) =>
+        existing.key === key ? { ...item, key } : existing,
+      ),
+    }));
+
+  const removeItem = (key: string) =>
+    edit((current) => ({
+      items: current.items.filter((existing) => existing.key !== key),
+    }));
+
+  const setNotes = (notes: string) => edit(() => ({ notes }));
+
+  const markClean = () => setState((current) => ({ ...current, dirty: false }));
+
+  const reset = () => setState(fromProposal(sourceKey));
+
+  const revert = () => setState(fromProposal(sourceKey, proposal));
 
   return {
     items: state.items,
     notes: state.notes,
     dirty: state.dirty,
-    addItem(item: Omit<DraftItem, "key">) {
-      const key = newDraftKey();
-      edit((current) => ({ items: [...current.items, { ...item, key }] }));
-      return key;
-    },
-    updateItem(key: string, item: Omit<DraftItem, "key">) {
-      edit((current) => ({
-        items: current.items.map((existing) =>
-          existing.key === key ? { ...item, key } : existing,
-        ),
-      }));
-    },
-    removeItem(key: string) {
-      edit((current) => ({
-        items: current.items.filter((existing) => existing.key !== key),
-      }));
-    },
-    setNotes(notes: string) {
-      edit(() => ({ notes }));
-    },
-    markClean() {
-      setState((current) => ({ ...current, dirty: false }));
-    },
-    reset() {
-      setState(fromProposal(sourceKey));
-    },
-    revert() {
-      setState(fromProposal(sourceKey, proposal));
-    },
+    addItem,
+    updateItem,
+    removeItem,
+    setNotes,
+    markClean,
+    reset,
+    revert,
   };
-}
+};
 
 export type DraftBuilder = ReturnType<typeof useDraftBuilder>;

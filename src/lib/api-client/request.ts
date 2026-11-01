@@ -10,7 +10,7 @@ export type Requester = <S extends z.ZodType>(
   init?: { method?: string; body?: unknown },
 ) => Promise<z.output<S>>;
 
-export function createRequester(baseUrl = ""): Requester {
+export const createRequester = (baseUrl = ""): Requester => {
   return async (schema, path, init = {}) => {
     const response = await fetch(`${baseUrl}${path}`, {
       method: init.method,
@@ -38,4 +38,4 @@ export function createRequester(baseUrl = ""): Requester {
 
     return schema.parse(payload);
   };
-}
+};

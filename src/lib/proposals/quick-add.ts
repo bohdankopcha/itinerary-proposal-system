@@ -144,7 +144,7 @@ const capitalize = (text: string) =>
  * Reads a free-text line such as "surf lesson day 2 10am 220" into a draft item.
  * Anything it cannot find stays null so the caller can apply defaults.
  */
-export function parseQuickAdd(input: string, stay: Stay): QuickAdd | null {
+export const parseQuickAdd = (input: string, stay: Stay): QuickAdd | null => {
   if (!input.trim()) return null;
 
   const dayCount = tripDates(stay.arrivalDate, stay.departureDate).length;
@@ -295,14 +295,14 @@ export function parseQuickAdd(input: string, stay: Stay): QuickAdd | null {
     durationMinutes,
     priceCents: priceDollars === null ? null : priceDollars * 100,
   };
-}
+};
 
 /** Fills whatever the parse left open: first open day, category default time, zero price. */
-export function resolveQuickAdd(
+export const resolveQuickAdd = (
   parsed: QuickAdd,
   stay: Stay,
   existingItems: { scheduledAt: string }[],
-) {
+) => {
   const dates = tripDates(stay.arrivalDate, stay.departureDate);
   const date =
     (parsed.dayIndex !== null ? dates[parsed.dayIndex] : undefined) ??
@@ -327,6 +327,6 @@ export function resolveQuickAdd(
     priceCents,
     scheduledAt: toScheduledAt(date, startMinutes),
   };
-}
+};
 
 export type ResolvedQuickAdd = ReturnType<typeof resolveQuickAdd>;

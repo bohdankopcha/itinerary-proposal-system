@@ -12,7 +12,7 @@ type SaveDraftInput = {
   items: ProposalItemInput[];
 };
 
-export function useSaveDraft() {
+export const useSaveDraft = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -30,4 +30,4 @@ export function useSaveDraft() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.proposalList });
     },
   });
-}
+};

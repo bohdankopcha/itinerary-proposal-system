@@ -101,7 +101,7 @@ describe("GET /api/reservations", () => {
     const response = await call(listReservationsRoute);
     expect(response.status).toBe(200);
     const { items } = reservationListSchema.parse(await response.json());
-    expect(items.map((r) => r.member.name)).toEqual([
+    expect(items.map((row) => row.member.name)).toEqual([
       "James Whitfield",
       "Amelia Hart",
       "Daniel Okafor",
@@ -124,7 +124,7 @@ describe("POST /api/proposals", () => {
       totalCents: 145_000,
     });
     expect(proposal.sentAt).toBeNull();
-    expect(proposal.items.map((i) => i.title)).toEqual([
+    expect(proposal.items.map((item) => item.title)).toEqual([
       "Private chef dinner",
       "Massage",
     ]);
@@ -145,7 +145,7 @@ describe("POST /api/proposals", () => {
         item({ title: "Early", scheduledAt: "2027-03-15T09:00:00.000Z" }),
       ],
     });
-    expect(proposal.items.map((i) => i.title)).toEqual(["Early", "Late"]);
+    expect(proposal.items.map((item) => item.title)).toEqual(["Early", "Late"]);
   });
 
   it("stores empty notes as null", async () => {
@@ -172,7 +172,7 @@ describe("POST /api/proposals", () => {
     expect(response.status).toBe(400);
     const error = await errorOf(response);
     expect(error.code).toBe("VALIDATION_ERROR");
-    expect(error.details?.map((d) => d.path)).toEqual(
+    expect(error.details?.map((issue) => issue.path)).toEqual(
       expect.arrayContaining(["items.0.category", "items.0.priceCents"]),
     );
     expect(await db.proposal.count()).toBe(before);
@@ -236,21 +236,25 @@ describe("GET /api/proposals", () => {
     expect(response.status).toBe(200);
     const { items } = proposalListSchema.parse(await response.json());
     expect(
-      items.map((p) => p.id).filter((id) => [first.id, second.id].includes(id)),
+      items
+        .map((proposal) => proposal.id)
+        .filter((id) => [first.id, second.id].includes(id)),
     ).toEqual([second.id, first.id]);
     expect(items[0]).toMatchObject({
       itemCount: 1,
       totalCents: 500,
       status: "draft",
     });
-    expect(items.every((p) => p.reservationId === AMELIA)).toBe(true);
+    expect(items.every((proposal) => proposal.reservationId === AMELIA)).toBe(
+      true,
+    );
   });
 
   it("returns every reservation's proposals without a filter", async () => {
     const mine = await create();
     const response = await call(listProposalsRoute);
     const { items } = proposalListSchema.parse(await response.json());
-    expect(items.map((p) => p.id)).toContain(mine.id);
+    expect(items.map((proposal) => proposal.id)).toContain(mine.id);
   });
 
   it("404 for an unknown reservation filter", async () => {
@@ -304,7 +308,7 @@ describe("PUT /api/proposals/[id]", () => {
       notes: null,
       totalCents: 9_000,
     });
-    expect(updated.items.map((i) => i.title)).toEqual(["Surf lesson"]);
+    expect(updated.items.map((item) => item.title)).toEqual(["Surf lesson"]);
     expect(
       await db.proposalItem.count({ where: { proposalId: created.id } }),
     ).toBe(1);
@@ -340,7 +344,7 @@ describe("PUT /api/proposals/[id]", () => {
       include: { items: true },
     });
     expect(row.notes).toBe("Welcome home");
-    expect(row.items.map((i) => i.title)).not.toContain("Tampered");
+    expect(row.items.map((item) => item.title)).not.toContain("Tampered");
   });
 
   it("404 for an unknown id", async () => {
@@ -489,11 +493,13 @@ describe("PATCH /api/proposals/[id]", () => {
 
   it("only one of two concurrent approvals succeeds", async () => {
     const id = await sent();
-    const [a, b] = await Promise.all([
+    const [firstResponse, secondResponse] = await Promise.all([
       patch(id, "approved"),
       patch(id, "approved"),
     ]);
-    expect([a.status, b.status].sort()).toEqual([200, 409]);
+    expect([firstResponse.status, secondResponse.status].sort()).toEqual([
+      200, 409,
+    ]);
   });
 
   it("400 for a missing or unknown status", async () => {

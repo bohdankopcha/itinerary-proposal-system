@@ -10,7 +10,9 @@ export const useItineraryExplorer = (dayCount: number) => {
   const [day, setDay] = useState(0);
   const [direction, setDirection] = useState<"right" | "left">("right");
   const [openCard, setOpenCard] = useState<number | null>(null);
-  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const pointerStart = useRef<{ clientX: number; clientY: number } | null>(
+    null,
+  );
   const justSwiped = useRef(false);
 
   const goTo = (next: number) => {
@@ -31,21 +33,24 @@ export const useItineraryExplorer = (dayCount: number) => {
   };
 
   const onPointerDown = (event: React.PointerEvent) => {
-    pointerStart.current = { x: event.clientX, y: event.clientY };
+    pointerStart.current = { clientX: event.clientX, clientY: event.clientY };
   };
 
   const onPointerUp = (event: React.PointerEvent) => {
     const start = pointerStart.current;
     pointerStart.current = null;
     if (!start) return;
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    if (Math.abs(dx) > SWIPE_DISTANCE && Math.abs(dx) > Math.abs(dy) * 1.4) {
+    const deltaX = event.clientX - start.clientX;
+    const deltaY = event.clientY - start.clientY;
+    if (
+      Math.abs(deltaX) > SWIPE_DISTANCE &&
+      Math.abs(deltaX) > Math.abs(deltaY) * 1.4
+    ) {
       justSwiped.current = true;
       setTimeout(() => {
         justSwiped.current = false;
       }, SWIPE_CLICK_GUARD_MS);
-      goTo(day + (dx < 0 ? 1 : -1));
+      goTo(day + (deltaX < 0 ? 1 : -1));
     }
   };
 

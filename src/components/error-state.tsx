@@ -1,7 +1,7 @@
 import { Panel } from "@/components/panel";
 import { Button } from "@/components/ui/button";
 
-export function ErrorState({
+export const ErrorState = ({
   title = "Something went wrong",
   message,
   actionLabel = "Try again",
@@ -11,7 +11,7 @@ export function ErrorState({
   message: string;
   actionLabel?: string;
   onAction?: () => void;
-}) {
+}) => {
   return (
     <Panel
       role="alert"
@@ -26,4 +26,4 @@ export function ErrorState({
       )}
     </Panel>
   );
-}
+};

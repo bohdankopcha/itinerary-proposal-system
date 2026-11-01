@@ -19,7 +19,9 @@ const COLUMNS = [
   "Last activity",
 ];
 
-export function ProposalsView({
+const SKELETON_ROWS = ["first", "second", "third", "fourth"];
+
+export const ProposalsView = ({
   currentProposalId,
   clientName,
   onOpen,
@@ -29,7 +31,7 @@ export function ProposalsView({
   clientName: string;
   onOpen: (proposalId: string) => void;
   onNew: () => void;
-}) {
+}) => {
   const { rows, counts, isPending, isError, refetch } = useProposalRows();
 
   return (
@@ -58,8 +60,8 @@ export function ProposalsView({
           aria-label="Loading proposals"
           className="flex flex-col gap-2 p-4"
         >
-          {Array.from({ length: 4 }, (_, index) => (
-            <Skeleton key={index} className="h-12 w-full" />
+          {SKELETON_ROWS.map((rowId) => (
+            <Skeleton key={rowId} className="h-12 w-full" />
           ))}
         </Panel>
       ) : rows.length === 0 ? (
@@ -106,4 +108,4 @@ export function ProposalsView({
       )}
     </section>
   );
-}
+};

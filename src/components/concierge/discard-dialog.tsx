@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function DiscardDialog({
+export const DiscardDialog = ({
   open,
   onConfirm,
   onCancel,
@@ -16,7 +16,7 @@ export function DiscardDialog({
   open: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-}) {
+}) => {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent showCloseButton={false}>
@@ -38,4 +38,4 @@ export function DiscardDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

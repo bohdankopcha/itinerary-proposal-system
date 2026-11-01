@@ -9,14 +9,14 @@ export type ItineraryDay<T> = {
 };
 
 /** Groups items by stay day, in time order; days without items are kept so callers can show open days. */
-export function groupByDay<
+export const groupByDay = <
   T extends { scheduledAt: string; priceCents: number },
 >(
   items: T[],
   stay: { arrivalDate: string; departureDate: string },
-): ItineraryDay<T>[] {
-  const sorted = [...items].sort((a, b) =>
-    a.scheduledAt.localeCompare(b.scheduledAt),
+): ItineraryDay<T>[] => {
+  const sorted = [...items].sort((first, second) =>
+    first.scheduledAt.localeCompare(second.scheduledAt),
   );
   return tripDates(stay.arrivalDate, stay.departureDate).map((date, index) => {
     const dayItems = sorted.filter((item) => dateOf(item.scheduledAt) === date);
@@ -27,16 +27,16 @@ export function groupByDay<
       subtotalCents: totalCents(dayItems),
     };
   });
-}
+};
 
-export function firstOpenDate(
+export const firstOpenDate = (
   items: { scheduledAt: string }[],
   stay: { arrivalDate: string; departureDate: string },
-) {
+) => {
   const dates = tripDates(stay.arrivalDate, stay.departureDate);
   const used = new Set(items.map((item) => dateOf(item.scheduledAt)));
   return dates.find((date) => !used.has(date)) ?? dates[0] ?? stay.arrivalDate;
-}
+};
 
 export const plannedDayCount = (
   items: { scheduledAt: string }[],

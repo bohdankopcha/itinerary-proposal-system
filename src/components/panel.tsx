@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils";
 
-export function Panel({
+export const Panel = ({
   as: Tag = "div",
   className,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { as?: "div" | "section" | "aside" }) {
+}: React.HTMLAttributes<HTMLElement> & {
+  as?: "div" | "section" | "aside";
+}) => {
   return (
     <Tag
       className={cn(
@@ -14,4 +16,4 @@ export function Panel({
       {...props}
     />
   );
-}
+};

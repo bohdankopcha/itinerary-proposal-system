@@ -12,7 +12,7 @@ import { createRequester } from "./request";
 
 export { ApiError } from "./api-error";
 
-export function createApiClient(baseUrl = "") {
+export const createApiClient = (baseUrl = "") => {
   const request = createRequester(baseUrl);
   const proposalPath = (id: string) =>
     `/api/proposals/${encodeURIComponent(id)}`;
@@ -50,6 +50,6 @@ export function createApiClient(baseUrl = "") {
         method: "POST",
       }),
   };
-}
+};
 
 export const apiClient = createApiClient();

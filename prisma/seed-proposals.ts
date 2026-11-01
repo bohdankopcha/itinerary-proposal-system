@@ -15,14 +15,14 @@ type SeedProposal = {
   items: SeedItem[];
 };
 
-function item(
+const item = (
   category: ItemCategory,
   date: string,
   time: string,
   title: string,
   description: string,
   priceUsd: number,
-): SeedItem {
+): SeedItem => {
   return {
     category,
     title,
@@ -30,7 +30,7 @@ function item(
     scheduledAt: new Date(`${date}T${time}:00.000Z`),
     priceCents: priceUsd * 100,
   };
-}
+};
 
 const jamesItems: SeedItem[] = [
   // Mar 15: arrival

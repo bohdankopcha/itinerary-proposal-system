@@ -15,37 +15,37 @@ const STATUS_BY_CODE: Record<ErrorCode, number> = {
 export const json = (data: unknown, status = 200) =>
   Response.json(data, { status });
 
-function errorResponse(
+const errorResponse = (
   code: ErrorCode,
   message: string,
   details?: ErrorDetail[],
-) {
+) => {
   const body: ApiErrorBody = {
     error: { code, message, ...(details && { details }) },
   };
   return Response.json(body, { status: STATUS_BY_CODE[code] });
-}
+};
 
-function toErrorResponse(error: unknown) {
+const toErrorResponse = (error: unknown) => {
   if (error instanceof DomainError) {
     return errorResponse(error.code, error.message, error.details);
   }
   console.error("Unhandled API error", error);
   return errorResponse("INTERNAL_ERROR", "Something went wrong");
-}
+};
 
-export async function handle(run: () => Promise<Response>) {
+export const handle = async (run: () => Promise<Response>) => {
   try {
     return await run();
   } catch (error) {
     return toErrorResponse(error);
   }
-}
+};
 
-export function parseInput<S extends z.ZodType>(
+export const parseInput = <S extends z.ZodType>(
   schema: S,
   data: unknown,
-): z.output<S> {
+): z.output<S> => {
   const result = schema.safeParse(data);
   if (result.success) return result.data;
 
@@ -58,9 +58,9 @@ export function parseInput<S extends z.ZodType>(
     "Request validation failed",
     details,
   );
-}
+};
 
-export async function readJson(request: Request): Promise<unknown> {
+export const readJson = async (request: Request): Promise<unknown> => {
   try {
     return await request.json();
   } catch {
@@ -69,4 +69,4 @@ export async function readJson(request: Request): Promise<unknown> {
       "Request body must be valid JSON",
     );
   }
-}
+};

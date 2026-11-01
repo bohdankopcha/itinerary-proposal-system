@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import type { MemberProposalState } from "@/hooks/use-member-proposal";
 import type { Proposal } from "@/lib/schemas/proposal";
 
-export function MemberMain({
+export const MemberMain = ({
   proposal,
   member,
 }: {
   proposal: Proposal;
   member: MemberProposalState;
-}) {
+}) => {
   const collapsing = member.phase === "collapse";
   const showTrip = proposal.status !== "sent" && !collapsing;
   const showItinerary =
@@ -53,4 +53,4 @@ export function MemberMain({
       )}
     </>
   );
-}
+};

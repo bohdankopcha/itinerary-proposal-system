@@ -10,17 +10,17 @@ import {
   toReservation,
 } from "./mappers";
 
-export async function listReservations(): Promise<ReservationList> {
+export const listReservations = async (): Promise<ReservationList> => {
   const rows = await db.reservation.findMany({
     include: { member: true },
     orderBy: [{ arrivalDate: "asc" }, { id: "asc" }],
   });
   return { items: rows.map(toReservation) };
-}
+};
 
-export async function listProposals(filter: {
+export const listProposals = async (filter: {
   reservationId?: string;
-}): Promise<ProposalList> {
+}): Promise<ProposalList> => {
   if (filter.reservationId) {
     const reservation = await db.reservation.findUnique({
       where: { id: filter.reservationId },
@@ -37,13 +37,13 @@ export async function listProposals(filter: {
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
   return { items: rows.map(toProposalSummary) };
-}
+};
 
-export async function getProposal(id: string) {
+export const getProposal = async (id: string) => {
   const row = await db.proposal.findUnique({
     where: { id },
     include: proposalInclude,
   });
   if (!row) throw notFound("Proposal", id);
   return toProposal(row);
-}
+};

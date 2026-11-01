@@ -45,4 +45,6 @@ export const toItemInputs = (items: DraftItem[]): ProposalItemInput[] =>
   );
 
 export const sortByTime = <T extends { scheduledAt: string }>(items: T[]) =>
-  [...items].sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+  [...items].sort((first, second) =>
+    first.scheduledAt.localeCompare(second.scheduledAt),
+  );

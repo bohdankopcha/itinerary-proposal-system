@@ -8,13 +8,13 @@ const OPTIONS = [
   { mode: "timeline", label: "Timeline", Icon: ListTree },
 ] as const;
 
-export function ItineraryViewToggle({
+export const ItineraryViewToggle = ({
   mode,
   onChange,
 }: {
   mode: ExplorerMode;
   onChange: (mode: ExplorerMode) => void;
-}) {
+}) => {
   return (
     <div
       role="group"
@@ -39,4 +39,4 @@ export function ItineraryViewToggle({
       ))}
     </div>
   );
-}
+};

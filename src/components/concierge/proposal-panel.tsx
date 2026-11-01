@@ -20,14 +20,17 @@ import type { Reservation } from "@/lib/schemas/reservation";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 
-function lockMessage(status: ProposalStatus, proposal: Proposal | undefined) {
+const lockMessage = (
+  status: ProposalStatus,
+  proposal: Proposal | undefined,
+) => {
   if (status === "sent")
     return `${proposal?.sentAt ? `Sent ${formatStamp(proposal.sentAt)}. ` : ""}Locked for editing while the client reviews.`;
   if (status === "approved") return "Approved by the client. Awaiting payment.";
   return "Paid and locked in.";
-}
+};
 
-export function ProposalPanel({
+export const ProposalPanel = ({
   reservation,
   proposal,
   proposalId,
@@ -51,7 +54,7 @@ export function ProposalPanel({
   onPreview: () => void;
   dirty: boolean;
   onDiscard: () => void;
-}) {
+}) => {
   const locked = status !== "draft";
   const total = totalCents(items);
   const dayCount = tripDates(
@@ -177,4 +180,4 @@ export function ProposalPanel({
       </div>
     </Panel>
   );
-}
+};

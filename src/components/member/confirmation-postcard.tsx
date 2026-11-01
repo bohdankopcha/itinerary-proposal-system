@@ -10,11 +10,11 @@ const WORDS_START_MS = 600;
 
 const delay = (ms: number) => ({ animationDelay: `${ms}ms` });
 
-export function ConfirmationPostcard({
+export const ConfirmationPostcard = ({
   reservation,
 }: {
   reservation: Reservation;
-}) {
+}) => {
   const place = reservation.destination.split(",")[0];
   const words = `${place} is waiting for you.`.split(" ");
 
@@ -37,7 +37,7 @@ export function ConfirmationPostcard({
         className="relative mt-6 max-w-sm text-4xl leading-tight font-semibold tracking-tighter"
       >
         {words.map((word, index) => (
-          <span key={`${word}-${index}`}>
+          <span key={words.slice(0, index + 1).join(" ")}>
             <span
               className="animate-word-in inline-block"
               style={delay(WORDS_START_MS + index * WORD_DELAY_MS)}
@@ -61,11 +61,23 @@ export function ConfirmationPostcard({
             strokeDasharray="2 6"
             className="stroke-primary-foreground/15"
           >
-            {[100, 200, 300].map((x) => (
-              <line key={x} x1={x} y1={0} x2={x} y2={220} />
+            {[100, 200, 300].map((positionX) => (
+              <line
+                key={positionX}
+                x1={positionX}
+                y1={0}
+                x2={positionX}
+                y2={220}
+              />
             ))}
-            {[70, 150].map((y) => (
-              <line key={y} x1={0} y1={y} x2={400} y2={y} />
+            {[70, 150].map((positionY) => (
+              <line
+                key={positionY}
+                x1={0}
+                y1={positionY}
+                x2={400}
+                y2={positionY}
+              />
             ))}
           </g>
           <path
@@ -133,4 +145,4 @@ export function ConfirmationPostcard({
       </div>
     </div>
   );
-}
+};

@@ -8,13 +8,13 @@ import type { ItineraryDay } from "@/lib/proposals/itinerary";
 import { minutesOf } from "@/lib/proposals/trip-days";
 import { cn } from "@/lib/utils";
 
-export function TimelineDay({
+export const TimelineDay = ({
   day,
   delay,
 }: {
   day: ItineraryDay<ExplorerItem>;
   delay: number;
-}) {
+}) => {
   const { day: number, weekdayLong, monthLong } = dateParts(day.date);
 
   return (
@@ -79,4 +79,4 @@ export function TimelineDay({
       </Panel>
     </li>
   );
-}
+};

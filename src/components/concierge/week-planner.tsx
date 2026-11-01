@@ -18,7 +18,7 @@ import { groupByDay } from "@/lib/proposals/itinerary";
 import type { Reservation } from "@/lib/schemas/reservation";
 import { ChevronLeft, ChevronRight, Lock, Plus } from "lucide-react";
 
-export function WeekPlanner({
+export const WeekPlanner = ({
   reservation,
   items,
   locked,
@@ -40,7 +40,7 @@ export function WeekPlanner({
   onPageChange: (page: number) => void;
   onAdd: (date?: string, minutes?: number | null) => void;
   onOpenItem: (item: DraftItem) => void;
-}) {
+}) => {
   const days = useMemo(
     () => groupByDay(items, reservation),
     [items, reservation],
@@ -164,4 +164,4 @@ export function WeekPlanner({
       </div>
     </Panel>
   );
-}
+};

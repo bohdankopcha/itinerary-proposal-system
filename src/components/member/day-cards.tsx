@@ -10,14 +10,14 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const STACK_OVERLAP = -28;
 const OPEN_GAP = 12;
 
-export function daySummary(day: ItineraryDay<ExplorerItem>) {
+export const daySummary = (day: ItineraryDay<ExplorerItem>) => {
   const count = day.items.length;
   return count
     ? `${count} ${count === 1 ? "experience" : "experiences"} · ${formatMoney(day.subtotalCents)}`
     : "Open day";
-}
+};
 
-export function DayCards({
+export const DayCards = ({
   days,
   explorer,
   collapsing,
@@ -25,7 +25,7 @@ export function DayCards({
   days: ItineraryDay<ExplorerItem>[];
   explorer: ItineraryExplorerState;
   collapsing: boolean;
-}) {
+}) => {
   const current = days[explorer.day];
   if (!current) return null;
   const items = current.items;
@@ -103,4 +103,4 @@ export function DayCards({
       </div>
     </>
   );
-}
+};

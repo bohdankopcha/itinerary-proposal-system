@@ -16,7 +16,7 @@ export const proposalUrl = (proposalId: string) => {
   return `${base.replace(/\/+$/, "")}/proposal/${proposalId}`;
 };
 
-export function buildEmailBody(proposal: {
+export const buildEmailBody = (proposal: {
   id: string;
   notes: string | null;
   items: { priceCents: number }[];
@@ -27,7 +27,7 @@ export function buildEmailBody(proposal: {
     departureDate: Date;
     member: { name: string };
   };
-}) {
+}) => {
   const { reservation } = proposal;
   const lines = [
     `Dear ${reservation.member.name},`,
@@ -40,4 +40,4 @@ export function buildEmailBody(proposal: {
     lines.push("", `A note from your concierge: ${proposal.notes}`);
   lines.push("", `Review and approve: ${proposalUrl(proposal.id)}`);
   return lines.join("\n");
-}
+};

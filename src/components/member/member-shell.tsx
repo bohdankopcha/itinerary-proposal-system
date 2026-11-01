@@ -1,6 +1,6 @@
 import { AmbientBackground } from "@/components/ambient-background";
 
-export function MemberShell({ children }: { children: React.ReactNode }) {
+export const MemberShell = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="relative min-h-dvh">
       <AmbientBackground />
@@ -9,4 +9,4 @@ export function MemberShell({ children }: { children: React.ReactNode }) {
       </main>
     </div>
   );
-}
+};

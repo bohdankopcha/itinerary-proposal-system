@@ -4,7 +4,7 @@ import type { ProposalRow as Row } from "@/hooks/use-proposal-rows";
 import { formatMoney, formatRange } from "@/lib/proposals/format";
 import { cn } from "@/lib/utils";
 
-export function ProposalRow({
+export const ProposalRow = ({
   row,
   current,
   index,
@@ -14,7 +14,7 @@ export function ProposalRow({
   current: boolean;
   index: number;
   onOpen: () => void;
-}) {
+}) => {
   const { summary, reservation, activity } = row;
   return (
     <li>
@@ -50,4 +50,4 @@ export function ProposalRow({
       </button>
     </li>
   );
-}
+};

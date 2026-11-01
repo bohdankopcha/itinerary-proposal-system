@@ -13,7 +13,7 @@ export type DragTarget = {
   durationMinutes: number;
 };
 
-export function usePlannerDrag({
+export const usePlannerDrag = ({
   locked,
   builder,
   onMoved,
@@ -21,12 +21,12 @@ export function usePlannerDrag({
   locked: boolean;
   builder: DraftBuilder;
   onMoved: (key: string) => void;
-}) {
+}) => {
   const [dragging, setDragging] = useState<DraftItem | null>(null);
   const [over, setOver] = useState<DragTarget | null>(null);
   const grabOffset = useRef(0);
 
-  function targetFor(date: string, event: React.DragEvent<HTMLElement>) {
+  const targetFor = (date: string, event: React.DragEvent<HTMLElement>) => {
     if (!dragging) return null;
     const durationMinutes = itemDurationMinutes(dragging);
     const offsetY =
@@ -40,54 +40,60 @@ export function usePlannerDrag({
         durationMinutes,
       ),
     };
-  }
+  };
 
-  function end() {
+  const end = () => {
     setDragging(null);
     setOver(null);
-  }
+  };
+
+  const start = (item: DraftItem, event: React.DragEvent<HTMLElement>) => {
+    if (locked) {
+      event.preventDefault();
+      return;
+    }
+    grabOffset.current =
+      event.clientY - event.currentTarget.getBoundingClientRect().top;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", item.key);
+    setTimeout(() => setDragging(item), 0);
+  };
+
+  const overDay = (date: string, event: React.DragEvent<HTMLElement>) => {
+    const target = targetFor(date, event);
+    if (!target) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setOver((current) =>
+      current &&
+      current.date === target.date &&
+      current.startMinutes === target.startMinutes
+        ? current
+        : target,
+    );
+  };
+
+  const dropOnDay = (date: string, event: React.DragEvent<HTMLElement>) => {
+    const target = targetFor(date, event);
+    if (!target || !dragging) return;
+    event.preventDefault();
+    const { key, ...fields } = dragging;
+    builder.updateItem(key, {
+      ...fields,
+      scheduledAt: toScheduledAt(target.date, target.startMinutes),
+    });
+    onMoved(key);
+    end();
+  };
 
   return {
     draggingKey: dragging?.key ?? null,
     over,
-    start(item: DraftItem, event: React.DragEvent<HTMLElement>) {
-      if (locked) {
-        event.preventDefault();
-        return;
-      }
-      grabOffset.current =
-        event.clientY - event.currentTarget.getBoundingClientRect().top;
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", item.key);
-      setTimeout(() => setDragging(item), 0);
-    },
-    overDay(date: string, event: React.DragEvent<HTMLElement>) {
-      const target = targetFor(date, event);
-      if (!target) return;
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-      setOver((current) =>
-        current &&
-        current.date === target.date &&
-        current.startMinutes === target.startMinutes
-          ? current
-          : target,
-      );
-    },
-    dropOnDay(date: string, event: React.DragEvent<HTMLElement>) {
-      const target = targetFor(date, event);
-      if (!target || !dragging) return;
-      event.preventDefault();
-      const { key, ...fields } = dragging;
-      builder.updateItem(key, {
-        ...fields,
-        scheduledAt: toScheduledAt(target.date, target.startMinutes),
-      });
-      onMoved(key);
-      end();
-    },
+    start,
+    overDay,
+    dropOnDay,
     end,
   };
-}
+};
 
 export type PlannerDrag = ReturnType<typeof usePlannerDrag>;

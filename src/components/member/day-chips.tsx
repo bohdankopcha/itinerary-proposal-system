@@ -2,7 +2,7 @@ import { dateParts } from "@/lib/proposals/format";
 import type { ItineraryDay } from "@/lib/proposals/itinerary";
 import { cn } from "@/lib/utils";
 
-export function DayChips({
+export const DayChips = ({
   days,
   current,
   onPick,
@@ -10,7 +10,7 @@ export function DayChips({
   days: ItineraryDay<unknown>[];
   current: number;
   onPick: (index: number) => void;
-}) {
+}) => {
   return (
     <div
       role="group"
@@ -56,4 +56,4 @@ export function DayChips({
       })}
     </div>
   );
-}
+};

@@ -8,7 +8,7 @@ import {
 import { formatRange } from "@/lib/proposals/format";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-export function ReservationSelect({
+export const ReservationSelect = ({
   reservations,
   value,
   onChange,
@@ -16,7 +16,7 @@ export function ReservationSelect({
   reservations: Reservation[];
   value: string;
   onChange: (id: string) => void;
-}) {
+}) => {
   const options = reservations.map((reservation) => ({
     value: reservation.id,
     label: `${reservation.member.name} · ${reservation.destination} · ${formatRange(reservation.arrivalDate, reservation.departureDate)}`,
@@ -40,4 +40,4 @@ export function ReservationSelect({
       </SelectContent>
     </Select>
   );
-}
+};

@@ -9,11 +9,11 @@ import type {
 import { queryKeys } from "./query-keys";
 
 /** Writes `status` into the detail and list caches and returns a function that restores the previous values. */
-export async function applyOptimisticStatus(
+export const applyOptimisticStatus = async (
   queryClient: QueryClient,
   id: string,
   status: ProposalStatus,
-) {
+) => {
   await queryClient.cancelQueries({ queryKey: queryKeys.proposals });
 
   const previousDetail = queryClient.getQueryData<Proposal>(
@@ -36,8 +36,10 @@ export async function applyOptimisticStatus(
       : current,
   );
 
-  return function rollback() {
+  const rollback = () => {
     queryClient.setQueryData(queryKeys.proposal(id), previousDetail);
     queryClient.setQueryData(queryKeys.proposalList, previousList);
   };
-}
+
+  return rollback;
+};

@@ -4,11 +4,11 @@ import { formatMoney } from "@/lib/proposals/format";
 import type { categoryBreakdown } from "@/lib/proposals/totals";
 import { cn } from "@/lib/utils";
 
-export function CategoryBreakdown({
+export const CategoryBreakdown = ({
   entries,
 }: {
   entries: ReturnType<typeof categoryBreakdown>;
-}) {
+}) => {
   if (entries.length === 0) return null;
   return (
     <ul className="flex flex-col border-t pt-2.5">
@@ -35,4 +35,4 @@ export function CategoryBreakdown({
       ))}
     </ul>
   );
-}
+};

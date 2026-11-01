@@ -15,7 +15,7 @@ export type ProposalRow = {
   activity: { at: string; label: string };
 };
 
-export function useProposalRows() {
+export const useProposalRows = () => {
   const proposals = useProposalList();
   const reservations = useReservations();
 
@@ -33,7 +33,9 @@ export function useProposalRows() {
         ? [{ summary, reservation, activity: latestActivity(summary) }]
         : [];
     })
-    .sort((a, b) => b.activity.at.localeCompare(a.activity.at));
+    .sort((first, second) =>
+      second.activity.at.localeCompare(first.activity.at),
+    );
 
   const counts = Object.fromEntries(
     PROPOSAL_STATUSES.map((status) => [
@@ -54,4 +56,4 @@ export function useProposalRows() {
     isError: proposals.isError || reservations.isError,
     refetch,
   };
-}
+};

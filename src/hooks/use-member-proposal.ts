@@ -85,6 +85,22 @@ export const useMemberProposal = (id: string) => {
     }
   };
 
+  const run = () => {
+    if (action?.target === "approved") void approveProposal();
+    else if (action?.target === "paid") void payProposal();
+  };
+
+  const showConfirmation = () => {
+    setScreen("confirm");
+    scrollToTop();
+  };
+
+  const backToItinerary = () => {
+    setScreen("main");
+    setShowDetails(true);
+    scrollToTop();
+  };
+
   return {
     proposal,
     status,
@@ -97,21 +113,11 @@ export const useMemberProposal = (id: string) => {
     error,
     busy: approve.isPending || pay.isPending || phase === "lock",
     action,
-    run: () => {
-      if (action?.target === "approved") void approveProposal();
-      else if (action?.target === "paid") void payProposal();
-    },
+    run,
     showDetails,
     toggleDetails: () => setShowDetails((open) => !open),
-    showConfirmation: () => {
-      setScreen("confirm");
-      scrollToTop();
-    },
-    backToItinerary: () => {
-      setScreen("main");
-      setShowDetails(true);
-      scrollToTop();
-    },
+    showConfirmation,
+    backToItinerary,
   };
 };
 

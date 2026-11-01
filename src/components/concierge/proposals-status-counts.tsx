@@ -1,11 +1,11 @@
 import { StatusBadge } from "@/components/status-badge";
 import { PROPOSAL_STATUSES, type ProposalStatus } from "@/lib/schemas/proposal";
 
-export function ProposalsStatusCounts({
+export const ProposalsStatusCounts = ({
   counts,
 }: {
   counts: Record<ProposalStatus, number>;
-}) {
+}) => {
   return (
     <dl className="flex flex-wrap gap-7">
       {PROPOSAL_STATUSES.map((status) => (
@@ -20,4 +20,4 @@ export function ProposalsStatusCounts({
       ))}
     </dl>
   );
-}
+};

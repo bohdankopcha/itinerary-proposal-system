@@ -1,7 +1,13 @@
 import { Eyebrow } from "@/components/eyebrow";
 import { dateParts } from "@/lib/proposals/format";
 
-export function TripDateStat({ label, date }: { label: string; date: string }) {
+export const TripDateStat = ({
+  label,
+  date,
+}: {
+  label: string;
+  date: string;
+}) => {
   const { day, month, year, weekdayLong } = dateParts(date);
   return (
     <div>
@@ -21,4 +27,4 @@ export function TripDateStat({ label, date }: { label: string; date: string }) {
       </dd>
     </div>
   );
-}
+};

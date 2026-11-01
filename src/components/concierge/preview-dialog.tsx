@@ -12,7 +12,7 @@ import {
 import type { DraftItem } from "@/lib/proposals/draft";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-export function PreviewDialog({
+export const PreviewDialog = ({
   open,
   onOpenChange,
   reservation,
@@ -30,8 +30,13 @@ export function PreviewDialog({
   sendLabel: string;
   canSend: boolean;
   onSend: () => void;
-}) {
+}) => {
   const firstName = reservation.member.name.split(" ")[0];
+
+  const sendAndClose = () => {
+    onOpenChange(false);
+    onSend();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -58,17 +63,11 @@ export function PreviewDialog({
           >
             Close
           </Button>
-          <Button
-            disabled={!canSend}
-            onClick={() => {
-              onOpenChange(false);
-              onSend();
-            }}
-          >
+          <Button disabled={!canSend} onClick={sendAndClose}>
             {sendLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};

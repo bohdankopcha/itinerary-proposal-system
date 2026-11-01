@@ -2,7 +2,11 @@ import type { ExplorerItem } from "@/components/member/pass-card";
 import { TimelineDay } from "@/components/member/timeline-day";
 import type { ItineraryDay } from "@/lib/proposals/itinerary";
 
-export function DayTimeline({ days }: { days: ItineraryDay<ExplorerItem>[] }) {
+export const DayTimeline = ({
+  days,
+}: {
+  days: ItineraryDay<ExplorerItem>[];
+}) => {
   return (
     <ol className="flex flex-col gap-1.5">
       {days.map((day) => (
@@ -10,4 +14,4 @@ export function DayTimeline({ days }: { days: ItineraryDay<ExplorerItem>[] }) {
       ))}
     </ol>
   );
-}
+};

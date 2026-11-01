@@ -1,7 +1,7 @@
 import { Panel } from "@/components/panel";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function MemberSkeleton() {
+export const MemberSkeleton = () => {
   return (
     <div
       role="status"
@@ -18,4 +18,4 @@ export function MemberSkeleton() {
       <Skeleton className="h-49 w-full rounded-3xl" />
     </div>
   );
-}
+};

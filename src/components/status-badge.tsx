@@ -13,7 +13,7 @@ const STATUS_STYLES: Record<ProposalStatus, { badge: string; dot: string }> = {
   },
 };
 
-export function StatusBadge({
+export const StatusBadge = ({
   status,
   label,
   className,
@@ -21,7 +21,7 @@ export function StatusBadge({
   status: ProposalStatus;
   label?: string;
   className?: string;
-}) {
+}) => {
   const styles = STATUS_STYLES[status];
   return (
     <Badge
@@ -39,4 +39,4 @@ export function StatusBadge({
       {label ?? STATUS_LABELS[status]}
     </Badge>
   );
-}
+};

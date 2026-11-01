@@ -1,3 +1,4 @@
+import { ConfirmationRow } from "@/components/member/confirmation-row";
 import { ConfirmationPostcard } from "@/components/member/confirmation-postcard";
 import { Eyebrow } from "@/components/eyebrow";
 import { Panel } from "@/components/panel";
@@ -11,32 +12,7 @@ import type { Proposal } from "@/lib/schemas/proposal";
 
 const delay = (ms: number) => ({ animationDelay: `${ms}ms` });
 
-function Row({
-  label,
-  children,
-  emphasized = false,
-}: {
-  label: string;
-  children: React.ReactNode;
-  emphasized?: boolean;
-}) {
-  return (
-    <div className="flex justify-between gap-4 border-b py-3 last:border-b-0">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd
-        className={
-          emphasized
-            ? "text-2xl font-medium tracking-tight tabular-nums"
-            : "text-right font-medium tabular-nums"
-        }
-      >
-        {children}
-      </dd>
-    </div>
-  );
-}
-
-export function ConfirmationScreen({ proposal }: { proposal: Proposal }) {
+export const ConfirmationScreen = ({ proposal }: { proposal: Proposal }) => {
   const { reservation } = proposal;
   const firstName = reservation.member.name.split(" ")[0];
   const nights = nightsBetween(
@@ -94,25 +70,27 @@ export function ConfirmationScreen({ proposal }: { proposal: Proposal }) {
           </span>
         </div>
         <dl className="flex flex-col">
-          <Row label="Client">{reservation.member.name}</Row>
-          <Row label="Villa">
+          <ConfirmationRow label="Client">
+            {reservation.member.name}
+          </ConfirmationRow>
+          <ConfirmationRow label="Villa">
             {reservation.villa},{" "}
             {reservation.destination.split(",").at(-1)?.trim()}
-          </Row>
-          <Row label="Arrival">
+          </ConfirmationRow>
+          <ConfirmationRow label="Arrival">
             {formatDateWithYear(reservation.arrivalDate)}
-          </Row>
-          <Row label="Departure">
+          </ConfirmationRow>
+          <ConfirmationRow label="Departure">
             {formatDateWithYear(reservation.departureDate)}
-          </Row>
-          <Row label="Experiences">
+          </ConfirmationRow>
+          <ConfirmationRow label="Experiences">
             {proposal.items.length} across {nights} nights
-          </Row>
-          <Row label="Total paid" emphasized>
+          </ConfirmationRow>
+          <ConfirmationRow label="Total paid" emphasized>
             {formatMoney(proposal.totalCents)}
-          </Row>
+          </ConfirmationRow>
         </dl>
       </Panel>
     </section>
   );
-}
+};

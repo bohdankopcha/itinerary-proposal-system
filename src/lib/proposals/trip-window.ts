@@ -5,10 +5,10 @@ import { DomainError } from "./errors";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export function validateItemsWithinTrip(
+export const validateItemsWithinTrip = (
   items: Pick<ProposalItemInput, "scheduledAt">[],
   stay: { arrivalDate: Date; departureDate: Date },
-) {
+) => {
   const start = stay.arrivalDate.getTime();
   const end = stay.departureDate.getTime() + DAY_MS;
 
@@ -31,4 +31,4 @@ export function validateItemsWithinTrip(
       details,
     );
   }
-}
+};

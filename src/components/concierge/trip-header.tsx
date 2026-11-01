@@ -3,7 +3,7 @@ import { TripDateStat } from "@/components/concierge/trip-date-stat";
 import { nightsBetween } from "@/lib/proposals/trip-days";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-export function TripHeader({ reservation }: { reservation: Reservation }) {
+export const TripHeader = ({ reservation }: { reservation: Reservation }) => {
   const nights = nightsBetween(
     reservation.arrivalDate,
     reservation.departureDate,
@@ -36,4 +36,4 @@ export function TripHeader({ reservation }: { reservation: Reservation }) {
       </dl>
     </section>
   );
-}
+};

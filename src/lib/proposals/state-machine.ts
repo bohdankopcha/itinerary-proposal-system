@@ -14,10 +14,10 @@ export const nextStatus = (from: ProposalStatus) => TRANSITIONS[from];
 export const canTransition = (from: ProposalStatus, to: ProposalStatus) =>
   TRANSITIONS[from] === to;
 
-export function transition(from: ProposalStatus, to: ProposalStatus) {
+export const transition = (from: ProposalStatus, to: ProposalStatus) => {
   if (!canTransition(from, to)) throw invalidTransition(from, to);
   return to;
-}
+};
 
 export const isEditable = (status: ProposalStatus) => status === "draft";
 

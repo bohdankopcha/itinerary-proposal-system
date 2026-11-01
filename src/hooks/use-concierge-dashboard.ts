@@ -89,15 +89,15 @@ export const useConciergeDashboard = () => {
     onItemPlaced: setPage,
   });
 
-  function guarded(navigate: () => void) {
+  const guarded = (proceed: () => void) => {
     const run = () => {
       actions.clearNotice();
       setPage(0);
-      navigate();
+      proceed();
     };
     if (builder.dirty && !locked) setPendingNavigation(() => run);
     else run();
-  }
+  };
 
   const drag = usePlannerDrag({ locked, builder, onMoved: editor.flash });
 
@@ -110,7 +110,9 @@ export const useConciergeDashboard = () => {
   const newestProposalId = (reservationId: string) =>
     proposalListQuery.data
       ?.filter((item) => item.reservationId === reservationId)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.id;
+      .sort((first, second) =>
+        second.createdAt.localeCompare(first.createdAt),
+      )[0]?.id;
   const selectReservation = (id: string) => {
     if (id === reservation?.id) return;
     guarded(() => {
@@ -138,6 +140,10 @@ export const useConciergeDashboard = () => {
       actions.clearNotice();
       builder.revert();
     });
+  };
+  const confirmDiscard = () => {
+    pendingNavigation?.();
+    setPendingNavigation(null);
   };
   const canSend = !locked && items.length > 0 && !actions.isPending;
 
@@ -192,10 +198,7 @@ export const useConciergeDashboard = () => {
     openProposal,
     discard: {
       open: pendingNavigation !== null,
-      confirm: () => {
-        pendingNavigation?.();
-        setPendingNavigation(null);
-      },
+      confirm: confirmDiscard,
       cancel: () => setPendingNavigation(null),
     },
   };

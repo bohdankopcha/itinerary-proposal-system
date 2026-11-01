@@ -6,7 +6,7 @@ import type { ProposalStatus } from "@/lib/schemas/proposal";
 import { applyOptimisticStatus } from "./optimistic-status";
 import { queryKeys } from "./query-keys";
 
-export function useStatusTransition(target: ProposalStatus) {
+export const useStatusTransition = (target: ProposalStatus) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -26,4 +26,4 @@ export function useStatusTransition(target: ProposalStatus) {
     onSettled: () =>
       queryClient.invalidateQueries({ queryKey: queryKeys.proposals }),
   });
-}
+};

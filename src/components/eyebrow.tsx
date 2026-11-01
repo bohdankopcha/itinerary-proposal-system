@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
-export function Eyebrow({
+export const Eyebrow = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement>) => {
   return (
     <div
       className={cn(
@@ -13,4 +13,4 @@ export function Eyebrow({
       {...props}
     />
   );
-}
+};

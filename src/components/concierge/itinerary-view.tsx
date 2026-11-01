@@ -7,21 +7,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ConciergeDashboardState } from "@/hooks/use-concierge-dashboard";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-export function ItineraryView({
-  dashboard: d,
+export const ItineraryView = ({
+  dashboard,
   reservation,
 }: {
   dashboard: ConciergeDashboardState;
   reservation: Reservation;
-}) {
-  if (d.proposalFailed) {
+}) => {
+  if (dashboard.proposalFailed) {
     return (
       <div className="p-4 sm:p-8">
         <ErrorState
           title="Proposal not available"
           message="This proposal could not be loaded. It may have been removed."
           actionLabel="Start a new proposal"
-          onAction={d.startNewProposal}
+          onAction={dashboard.startNewProposal}
         />
       </div>
     );
@@ -31,7 +31,7 @@ export function ItineraryView({
     <>
       <TripHeader reservation={reservation} />
       <div className="flex flex-col gap-5 px-4 pb-6 sm:px-8 lg:min-h-0 lg:flex-1 lg:flex-row">
-        {d.proposalLoading ? (
+        {dashboard.proposalLoading ? (
           <>
             <Panel
               role="status"
@@ -49,30 +49,30 @@ export function ItineraryView({
             <div className="flex h-160 min-w-0 flex-col lg:h-auto lg:flex-1">
               <WeekPlanner
                 reservation={reservation}
-                items={d.items}
-                locked={d.locked}
-                page={d.page}
-                flashKey={d.editor.flashKey}
-                drag={d.drag}
-                resize={d.resize}
-                onPageChange={d.setPage}
-                onAdd={d.editor.openNew}
-                onOpenItem={d.editor.openItem}
+                items={dashboard.items}
+                locked={dashboard.locked}
+                page={dashboard.page}
+                flashKey={dashboard.editor.flashKey}
+                drag={dashboard.drag}
+                resize={dashboard.resize}
+                onPageChange={dashboard.setPage}
+                onAdd={dashboard.editor.openNew}
+                onOpenItem={dashboard.editor.openItem}
               />
             </div>
             <div className="flex lg:w-85 lg:shrink-0">
               <ProposalPanel
                 reservation={reservation}
-                proposal={d.proposal}
-                proposalId={d.proposalId}
-                status={d.status}
-                items={d.items}
-                notes={d.notes}
-                actions={d.actions}
-                onNotesChange={d.builder.setNotes}
-                onPreview={() => d.setPreviewOpen(true)}
-                dirty={d.builder.dirty}
-                onDiscard={d.requestDiscard}
+                proposal={dashboard.proposal}
+                proposalId={dashboard.proposalId}
+                status={dashboard.status}
+                items={dashboard.items}
+                notes={dashboard.notes}
+                actions={dashboard.actions}
+                onNotesChange={dashboard.builder.setNotes}
+                onPreview={() => dashboard.setPreviewOpen(true)}
+                dirty={dashboard.builder.dirty}
+                onDiscard={dashboard.requestDiscard}
               />
             </div>
           </>
@@ -80,4 +80,4 @@ export function ItineraryView({
       </div>
     </>
   );
-}
+};

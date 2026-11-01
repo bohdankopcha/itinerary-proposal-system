@@ -48,7 +48,7 @@ const inputToCents = (value: string) => {
     : null;
 };
 
-export function useItemEditor({
+export const useItemEditor = ({
   reservation,
   items,
   builder,
@@ -60,19 +60,22 @@ export function useItemEditor({
   builder: DraftBuilder;
   locked: boolean;
   onItemPlaced: (page: number) => void;
-}) {
+}) => {
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
 
-  function flash(key: string) {
+  const flash = (key: string) => {
     setFlashKey(key);
     setTimeout(() => setFlashKey(null), FLASH_MS);
-  }
+  };
 
-  function openNew(date: string | null = null, minutes: number | null = null) {
+  const openNew = (
+    date: string | null = null,
+    minutesOfDay: number | null = null,
+  ) => {
     if (locked) return;
     const category = DEFAULT_CATEGORY;
-    const start = minutes ?? CATEGORIES[category].defaultStartMinutes;
+    const start = minutesOfDay ?? CATEGORIES[category].defaultStartMinutes;
     setSheet({
       key: null,
       form: {
@@ -90,9 +93,9 @@ export function useItemEditor({
         price: "",
       },
     });
-  }
+  };
 
-  function openItem(item: DraftItem) {
+  const openItem = (item: DraftItem) => {
     setSheet({
       key: item.key,
       form: {
@@ -107,12 +110,12 @@ export function useItemEditor({
         price: priceToInput(item.priceCents),
       },
     });
-  }
+  };
 
-  function setField<K extends keyof ItemFormValues>(
+  const setField = <K extends keyof ItemFormValues>(
     field: K,
     value: ItemFormValues[K],
-  ) {
+  ) => {
     setSheet((current) => {
       if (!current) return current;
       const next = { ...current.form, [field]: value };
@@ -127,7 +130,7 @@ export function useItemEditor({
       }
       return { ...current, form: next };
     });
-  }
+  };
 
   const form = sheet?.form;
   const minutes = form ? parseTimeInput(form.time) : null;
@@ -147,7 +150,7 @@ export function useItemEditor({
     durationMinutes !== null &&
     priceCents !== null;
 
-  function submit() {
+  const submit = () => {
     if (
       !sheet ||
       !form ||
@@ -173,15 +176,15 @@ export function useItemEditor({
     onItemPlaced(
       pageOfDay(dayIndexOf(fields.scheduledAt, reservation.arrivalDate)),
     );
-  }
+  };
 
-  function remove() {
+  const remove = () => {
     if (!sheet?.key || locked) return;
     builder.removeItem(sheet.key);
     setSheet(null);
-  }
+  };
 
-  function quickAdd(resolved: ResolvedQuickAdd) {
+  const quickAdd = (resolved: ResolvedQuickAdd) => {
     if (locked) return;
     const title = resolved.title.slice(0, 120);
     const key = builder.addItem({
@@ -196,11 +199,9 @@ export function useItemEditor({
     onItemPlaced(
       pageOfDay(dayIndexOf(resolved.scheduledAt, reservation.arrivalDate)),
     );
-  }
+  };
 
-  function close() {
-    setSheet(null);
-  }
+  const close = () => setSheet(null);
 
   return {
     sheet: sheet && {
@@ -220,6 +221,6 @@ export function useItemEditor({
     quickAdd,
     close,
   };
-}
+};
 
 export type ItemEditor = ReturnType<typeof useItemEditor>;

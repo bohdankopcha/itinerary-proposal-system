@@ -1,7 +1,7 @@
 import { Panel } from "@/components/panel";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function DashboardSkeleton() {
+export const DashboardSkeleton = () => {
   return (
     <div
       role="status"
@@ -26,4 +26,4 @@ export function DashboardSkeleton() {
       </div>
     </div>
   );
-}
+};

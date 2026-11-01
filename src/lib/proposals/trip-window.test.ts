@@ -34,7 +34,7 @@ describe("validateItemsWithinTrip", () => {
       expect(error).toBeInstanceOf(DomainError);
       const { code, details } = error as DomainError;
       expect(code).toBe("VALIDATION_ERROR");
-      expect(details?.map((d) => d.path)).toEqual([
+      expect(details?.map((issue) => issue.path)).toEqual([
         "items.0.scheduledAt",
         "items.2.scheduledAt",
       ]);

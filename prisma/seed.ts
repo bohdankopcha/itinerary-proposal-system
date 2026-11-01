@@ -52,7 +52,7 @@ const reservations = [
   },
 ];
 
-async function main() {
+const main = async () => {
   for (const { id, ...data } of members) {
     await db.member.upsert({
       where: { id },
@@ -74,7 +74,7 @@ async function main() {
       data: { id, ...data, items: { create: items } },
     });
   }
-}
+};
 
 main()
   .catch((error) => {

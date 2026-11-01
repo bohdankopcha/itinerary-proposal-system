@@ -15,7 +15,7 @@ const errorMessage = (error: unknown) =>
     ? error.message
     : "Something went wrong. Try again.";
 
-export function useProposalActions({
+export const useProposalActions = ({
   reservationId,
   proposalId,
   builder,
@@ -25,13 +25,13 @@ export function useProposalActions({
   proposalId: string | null;
   builder: DraftBuilder;
   onSaved: (id: string) => void;
-}) {
+}) => {
   const saveDraft = useSaveDraft();
   const sendProposal = useSendProposal();
   const [notice, setNotice] = useState<Notice | null>(null);
   const [sentResult, setSentResult] = useState<SendProposalResult | null>(null);
 
-  async function persist() {
+  const persist = async () => {
     const proposal = await saveDraft.mutateAsync({
       proposalId,
       reservationId,
@@ -41,18 +41,18 @@ export function useProposalActions({
     builder.markClean();
     onSaved(proposal.id);
     return proposal;
-  }
+  };
 
-  async function save() {
+  const save = async () => {
     setNotice(null);
     try {
       await persist();
     } catch (error) {
       setNotice({ tone: "error", message: errorMessage(error) });
     }
-  }
+  };
 
-  async function send() {
+  const send = async () => {
     setNotice(null);
     try {
       const needsSave = proposalId === null || builder.dirty;
@@ -61,7 +61,7 @@ export function useProposalActions({
     } catch (error) {
       setNotice({ tone: "error", message: errorMessage(error) });
     }
-  }
+  };
 
   return {
     notice,
@@ -72,6 +72,6 @@ export function useProposalActions({
     clearNotice: () => setNotice(null),
     dismissSent: () => setSentResult(null),
   };
-}
+};
 
 export type ProposalActions = ReturnType<typeof useProposalActions>;

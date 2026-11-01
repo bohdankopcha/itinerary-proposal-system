@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ConciergeBell } from "lucide-react";
 
-export function ConciergeNote({ notes }: { notes: string }) {
+export const ConciergeNote = ({ notes }: { notes: string }) => {
   return (
     <Panel
       as="section"
@@ -48,4 +48,4 @@ export function ConciergeNote({ notes }: { notes: string }) {
       </Collapsible>
     </Panel>
   );
-}
+};

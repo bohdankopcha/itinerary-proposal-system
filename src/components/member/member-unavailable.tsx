@@ -1,7 +1,7 @@
 import { Eyebrow } from "@/components/eyebrow";
 import { Panel } from "@/components/panel";
 
-export function MemberUnavailable() {
+export const MemberUnavailable = () => {
   return (
     <Panel
       as="section"
@@ -21,4 +21,4 @@ export function MemberUnavailable() {
       </p>
     </Panel>
   );
-}
+};

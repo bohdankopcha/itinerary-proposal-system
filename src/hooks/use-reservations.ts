@@ -4,10 +4,10 @@ import { apiClient } from "@/lib/api-client";
 
 import { queryKeys } from "./query-keys";
 
-export function useReservations() {
+export const useReservations = () => {
   return useQuery({
     queryKey: queryKeys.reservations,
     queryFn: apiClient.listReservations,
     select: (data) => data.items,
   });
-}
+};

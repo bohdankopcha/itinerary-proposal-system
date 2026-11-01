@@ -51,11 +51,11 @@ const exactDollars = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export function formatMoney(cents: number) {
+export const formatMoney = (cents: number) => {
   return (cents % 100 === 0 ? wholeDollars : exactDollars).format(cents / 100);
-}
+};
 
-export function dateParts(date: string) {
+export const dateParts = (date: string) => {
   const value = new Date(`${date}T00:00:00.000Z`);
   return {
     weekday: WEEKDAYS[value.getUTCDay()] ?? "",
@@ -65,32 +65,32 @@ export function dateParts(date: string) {
     day: value.getUTCDate(),
     year: value.getUTCFullYear(),
   };
-}
+};
 
-export function formatDayShort(date: string) {
+export const formatDayShort = (date: string) => {
   const { weekday, day } = dateParts(date);
   return `${weekday} ${day}`;
-}
+};
 
-export function formatDayMonth(date: string) {
+export const formatDayMonth = (date: string) => {
   const { weekday, day, month } = dateParts(date);
   return `${weekday} ${day} ${month}`;
-}
+};
 
-export function formatDayLong(date: string) {
+export const formatDayLong = (date: string) => {
   const { weekdayLong, month, day } = dateParts(date);
   return `${weekdayLong}, ${month} ${day}`;
-}
+};
 
-export function formatDayFull(date: string) {
+export const formatDayFull = (date: string) => {
   const { weekdayLong, monthLong, day } = dateParts(date);
   return `${weekdayLong}, ${monthLong} ${day}`;
-}
+};
 
-export function formatDateWithYear(date: string) {
+export const formatDateWithYear = (date: string) => {
   const { weekday, month, day, year } = dateParts(date);
   return `${weekday}, ${month} ${day}, ${year}`;
-}
+};
 
 const referenceCode = (id: string) => {
   let hash = 2166136261;
@@ -98,10 +98,10 @@ const referenceCode = (id: string) => {
   return String(1000 + ((hash >>> 0) % 9000));
 };
 
-export function formatConfirmationNumber(proposal: {
+export const formatConfirmationNumber = (proposal: {
   id: string;
   reservation: { destination: string; arrivalDate: string };
-}) {
+}) => {
   const place = proposal.reservation.destination.split(",")[0] ?? "";
   const initials = place
     .split(/\s+/)
@@ -111,26 +111,26 @@ export function formatConfirmationNumber(proposal: {
     .toUpperCase();
   const [, month, day] = proposal.reservation.arrivalDate.split("-");
   return `${initials}-${month}${day}-${referenceCode(proposal.id)}`;
-}
+};
 
-export function formatRange(arrivalDate: string, departureDate: string) {
+export const formatRange = (arrivalDate: string, departureDate: string) => {
   const from = dateParts(arrivalDate);
   const to = dateParts(departureDate);
   const toLabel =
     from.month === to.month ? `${to.day}` : `${to.month} ${to.day}`;
   return `${from.month} ${from.day} – ${toLabel}`;
-}
+};
 
-export function formatNights(arrivalDate: string, departureDate: string) {
+export const formatNights = (arrivalDate: string, departureDate: string) => {
   const nights = nightsBetween(arrivalDate, departureDate);
   return `${nights} ${nights === 1 ? "night" : "nights"}`;
-}
+};
 
-export function formatTime(minutes: number) {
+export const formatTime = (minutes: number) => {
   const hours = Math.floor(minutes / 60);
   const rest = String(minutes % 60).padStart(2, "0");
   return `${hours % 12 || 12}:${rest} ${hours >= 12 && hours < 24 ? "PM" : "AM"}`;
-}
+};
 
 export const formatTimeRange = (
   startMinutes: number,
@@ -140,15 +140,15 @@ export const formatTimeRange = (
     ? formatTime(startMinutes)
     : `${formatTime(startMinutes)} – ${formatTime(startMinutes + durationMinutes)}`;
 
-export function formatHourLabel(hour: number) {
+export const formatHourLabel = (hour: number) => {
   return `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`;
-}
+};
 
-export function formatStamp(iso: string) {
+export const formatStamp = (iso: string) => {
   const value = new Date(iso);
   const time = `${String(value.getUTCHours()).padStart(2, "0")}:${String(value.getUTCMinutes()).padStart(2, "0")}`;
   return `${MONTHS[value.getUTCMonth()]} ${value.getUTCDate()}, ${time}`;
-}
+};
 
 export const STATUS_LABELS: Record<ProposalStatus, string> = {
   draft: "Draft",
@@ -164,9 +164,9 @@ type Timestamps = {
   paidAt: string | null;
 };
 
-export function latestActivity(
+export const latestActivity = (
   proposal: Timestamps & { status: ProposalStatus },
-) {
+) => {
   const at =
     (proposal.status === "paid" && proposal.paidAt) ||
     (proposal.status === "approved" && proposal.approvedAt) ||
@@ -175,4 +175,4 @@ export function latestActivity(
   const verb =
     proposal.status === "draft" ? "Created" : STATUS_LABELS[proposal.status];
   return { at, label: `${verb} ${formatStamp(at)}` };
-}
+};

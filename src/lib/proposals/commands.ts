@@ -23,7 +23,7 @@ const toItemData = (item: ProposalItemInput) => ({
   durationMinutes: item.durationMinutes ?? null,
 });
 
-export async function createProposal(input: CreateProposalData) {
+export const createProposal = async (input: CreateProposalData) => {
   const reservation = await db.reservation.findUnique({
     where: { id: input.reservationId },
   });
@@ -39,9 +39,9 @@ export async function createProposal(input: CreateProposalData) {
     select: { id: true },
   });
   return getProposal(created.id);
-}
+};
 
-export async function replaceDraft(id: string, input: ReplaceProposalData) {
+export const replaceDraft = async (id: string, input: ReplaceProposalData) => {
   const existing = await db.proposal.findUnique({
     where: { id },
     include: { reservation: true },
@@ -71,11 +71,11 @@ export async function replaceDraft(id: string, input: ReplaceProposalData) {
     });
   });
   return getProposal(id);
-}
+};
 
 const TIMESTAMP_FIELD = { approved: "approvedAt", paid: "paidAt" } as const;
 
-export async function changeStatus(id: string, to: ProposalStatus) {
+export const changeStatus = async (id: string, to: ProposalStatus) => {
   const existing = await db.proposal.findUnique({
     where: { id },
     select: { status: true },
@@ -99,9 +99,9 @@ export async function changeStatus(id: string, to: ProposalStatus) {
     throw invalidTransition(current?.status ?? from, to);
   }
   return getProposal(id);
-}
+};
 
-export async function sendProposal(id: string): Promise<SendProposalResult> {
+export const sendProposal = async (id: string): Promise<SendProposalResult> => {
   const to = "sent" as const;
 
   const { proposal, email } = await db.$transaction(async (tx) => {
@@ -141,4 +141,4 @@ export async function sendProposal(id: string): Promise<SendProposalResult> {
 
   console.log(`[email] To: ${email.toEmail}\n${email.bodyPreview}`);
   return { ...toProposal(proposal), sentEmail: toSentEmail(email) };
-}
+};

@@ -1,7 +1,7 @@
 import { Eyebrow } from "@/components/eyebrow";
 import { formatMoney } from "@/lib/proposals/format";
 
-export function ActionBar({
+export const ActionBar = ({
   totalLabel,
   totalCents,
   error,
@@ -11,7 +11,7 @@ export function ActionBar({
   totalCents: number;
   error: string | null;
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-3 pb-3">
       <div className="border-panel-border bg-popover/95 pointer-events-auto mx-auto flex max-w-xl flex-col gap-2 rounded-3xl border p-3 pl-5 shadow-2xl">
@@ -32,4 +32,4 @@ export function ActionBar({
       </div>
     </div>
   );
-}
+};

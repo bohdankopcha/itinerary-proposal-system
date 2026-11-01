@@ -6,7 +6,7 @@ import { useItineraryExplorer } from "@/hooks/use-itinerary-explorer";
 import { groupByDay } from "@/lib/proposals/itinerary";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-export function ItineraryExplorer({
+export const ItineraryExplorer = ({
   reservation,
   items,
   collapsing = false,
@@ -14,7 +14,7 @@ export function ItineraryExplorer({
   reservation: Reservation;
   items: ExplorerItem[];
   collapsing?: boolean;
-}) {
+}) => {
   const days = groupByDay(items, reservation);
   const explorer = useItineraryExplorer(days.length);
 
@@ -30,4 +30,4 @@ export function ItineraryExplorer({
       )}
     </div>
   );
-}
+};

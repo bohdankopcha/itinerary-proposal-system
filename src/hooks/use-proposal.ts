@@ -4,7 +4,7 @@ import { ApiError, apiClient } from "@/lib/api-client";
 
 import { queryKeys } from "./query-keys";
 
-export function useProposal(id: string | null) {
+export const useProposal = (id: string | null) => {
   return useQuery({
     queryKey: queryKeys.proposal(id ?? ""),
     queryFn: () => apiClient.getProposal(id ?? ""),
@@ -13,4 +13,4 @@ export function useProposal(id: string | null) {
       !(error instanceof ApiError && error.code === "NOT_FOUND") &&
       failures < 1,
   });
-}
+};

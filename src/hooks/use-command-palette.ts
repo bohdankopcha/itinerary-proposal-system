@@ -39,7 +39,7 @@ type Command = Omit<PaletteOption, "highlighted" | "disabled" | "run"> & {
   run: () => void;
 };
 
-export function useCommandPalette({
+export const useCommandPalette = ({
   reservation,
   reservations,
   items,
@@ -69,30 +69,28 @@ export function useCommandPalette({
   onViewChange: (view: ConciergeView) => void;
   onNewProposal: () => void;
   onSelectReservation: (id: string) => void;
-}) {
+}) => {
   const [query, setQuery] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const open = query !== null;
   const locked = status !== "draft";
 
-  function show() {
+  const show = () => {
     onOpen();
     setActive(0);
     setQuery("");
-  }
+  };
 
-  function close() {
-    setQuery(null);
-  }
+  const close = () => setQuery(null);
 
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
+    const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         if (query === null) show();
         else close();
       }
-    }
+    };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   });
@@ -247,6 +245,24 @@ export function useCommandPalette({
         ]
       : [];
 
+  const updateQuery = (next: string) => {
+    setQuery(next);
+    setActive(0);
+  };
+
+  const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActive(Math.min(activeIndex + 1, options.length - 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActive(Math.max(activeIndex - 1, 0));
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      options[activeIndex]?.run();
+    }
+  };
+
   return {
     open,
     query: text,
@@ -255,24 +271,10 @@ export function useCommandPalette({
     activeIndex,
     show,
     close,
-    setQuery(next: string) {
-      setQuery(next);
-      setActive(0);
-    },
+    setQuery: updateQuery,
     setActive,
-    onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        setActive(Math.min(activeIndex + 1, options.length - 1));
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        setActive(Math.max(activeIndex - 1, 0));
-      } else if (event.key === "Enter") {
-        event.preventDefault();
-        options[activeIndex]?.run();
-      }
-    },
+    onInputKeyDown,
   };
-}
+};
 
 export type CommandPalette = ReturnType<typeof useCommandPalette>;

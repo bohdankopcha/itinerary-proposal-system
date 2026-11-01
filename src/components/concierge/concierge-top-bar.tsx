@@ -10,7 +10,7 @@ const TABS: { view: ConciergeView; label: string }[] = [
   { view: "proposals", label: "Proposals" },
 ];
 
-export function ConciergeTopBar({
+export const ConciergeTopBar = ({
   view,
   proposalCount,
   reservations,
@@ -26,7 +26,7 @@ export function ConciergeTopBar({
   onViewChange: (view: ConciergeView) => void;
   onReservationChange: (id: string) => void;
   onOpenPalette: () => void;
-}) {
+}) => {
   return (
     <header className="flex flex-wrap items-center gap-3 px-4 py-3.5 sm:px-8">
       <div className="mr-2 flex items-center gap-2.5 font-semibold tracking-tight">
@@ -82,4 +82,4 @@ export function ConciergeTopBar({
       </div>
     </header>
   );
-}
+};
