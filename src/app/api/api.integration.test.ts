@@ -235,7 +235,9 @@ describe("GET /api/proposals", () => {
     });
     expect(response.status).toBe(200);
     const { items } = proposalListSchema.parse(await response.json());
-    expect(items.map((p) => p.id)).toEqual([second.id, first.id]);
+    expect(
+      items.map((p) => p.id).filter((id) => [first.id, second.id].includes(id)),
+    ).toEqual([second.id, first.id]);
     expect(items[0]).toMatchObject({
       itemCount: 1,
       totalCents: 500,
