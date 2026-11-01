@@ -11,7 +11,7 @@ description: Required procedure and hard rules for any database change - editing
 2. `npx prisma migrate dev --name <short_description>` (or `npm run db:migrate`). Commit the generated migration.
 3. Update `prisma/seed.ts`.
 4. Update the affected zod schemas in `src/lib/schemas/`.
-5. Update `docs/data-model.md`. TODO: create the file when the first models land.
+5. Update `docs/data-model.md` if entities or modeling rules changed (rationale only, never copy fields).
 6. Add or update tests, then run `npm run check`.
 
 ## Hard rules

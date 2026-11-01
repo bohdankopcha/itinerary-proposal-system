@@ -22,8 +22,9 @@ Check against the Conventions and Structure sections in `AGENTS.md`.
 
 ## 3. Specific checks
 
-- **Route handlers:** every handler validates input (params, query, body) with a zod schema and returns the single shared error format. TODO: define the error format (shape, status codes) and where it lives.
-- **State machine:** every state transition has a test, including invalid transitions. TODO: path to the state machine once it exists.
+- **Route handlers:** every handler validates input (params, query, body) with a zod schema and returns the single shared error format and codes from `docs/api.md`.
+- **State machine:** every state transition has a test, including invalid transitions; transitions match `docs/proposal-lifecycle.md` and live in one place in `src/lib/proposals/`.
+- **Docs in sync:** if the diff changes behavior (routes, error codes, transitions, data model rules, UI flow or design direction), the matching file in `docs/` is updated in the same diff; flag any divergence between code and docs, and any doc text that duplicates code (fields, payloads) instead of linking to it.
 - **Leftovers:** no `console.log`, debugger statements, commented-out code, or stray TODOs without context.
 - **Mobile:** UI changes were checked at 375px width (see `frontend` skill).
 - **Dependencies:** each new package in `package.json` is actually used and justified; flag duplicates of existing ones.

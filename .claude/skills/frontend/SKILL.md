@@ -23,4 +23,4 @@ Design for 375px width first, then scale up. Before finishing, check at 375px: n
 
 ## Member view vs. concierge view
 
-The two views are intentionally styled differently. TODO: describe each view's visual direction and which tokens or layouts differ.
+The two views are intentionally styled differently. Direction, layout, tokens and motion rules are in `docs/design.md`; read it before building or restyling a screen, and update it if the direction changes.

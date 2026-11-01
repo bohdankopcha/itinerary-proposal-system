@@ -47,6 +47,19 @@ Flow: `components` → `hooks` → `lib/api-client` → route handler in `app/` 
 
 <!-- BEGIN:nextjs-agent-rules -->
 
+## Docs
+
+Before starting a task, read the relevant file in `docs/`:
+
+- [`docs/product.md`](docs/product.md) – scenario, roles, glossary, required capabilities, out of scope
+- [`docs/data-model.md`](docs/data-model.md) – entities and modeling rules (fields live in `prisma/schema.prisma`)
+- [`docs/proposal-lifecycle.md`](docs/proposal-lifecycle.md) – status state machine, transitions, errors, optimistic updates
+- [`docs/api.md`](docs/api.md) – routes, error format and codes (contracts live in `src/lib/schemas/`)
+- [`docs/design.md`](docs/design.md) – concierge and member view direction, tokens, motion
+- [`docs/decisions.md`](docs/decisions.md) – what was chosen and why; assumptions
+
+Rule: if you change behavior, update the matching file in `docs/` in the same change. Docs hold intent and rationale only; never copy what code already says (fields, payloads), link to it.
+
 ## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
