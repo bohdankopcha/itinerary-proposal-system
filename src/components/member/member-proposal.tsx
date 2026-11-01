@@ -11,21 +11,18 @@ import { Button } from "@/components/ui/button";
 import { useMemberProposal } from "@/hooks/use-member-proposal";
 import { Lock } from "lucide-react";
 
-const ACTION_BUTTON = "h-13 rounded-2xl px-6 text-base font-semibold";
-
-export function MemberProposal({ id }: { id: string }) {
+export const MemberProposal = ({ id }: { id: string }) => {
   const member = useMemberProposal(id);
   const { proposal } = member;
 
-  if (member.isPending) {
+  if (member.isPending)
     return (
       <MemberShell>
         <MemberSkeleton />
       </MemberShell>
     );
-  }
 
-  if (member.loadFailed) {
+  if (member.loadFailed)
     return (
       <MemberShell>
         <ErrorState
@@ -34,15 +31,13 @@ export function MemberProposal({ id }: { id: string }) {
         />
       </MemberShell>
     );
-  }
 
-  if (member.unavailable || !proposal) {
+  if (member.unavailable || !proposal)
     return (
       <MemberShell>
         <MemberUnavailable />
       </MemberShell>
     );
-  }
 
   const confirming = member.screen === "confirm";
   const paid = proposal.status === "paid";
@@ -68,23 +63,20 @@ export function MemberProposal({ id }: { id: string }) {
         {confirming ? (
           <Button
             variant="outline"
-            className={`${ACTION_BUTTON} border-input`}
+            size="action"
+            className="border-input"
             onClick={member.backToItinerary}
           >
             Back to itinerary
           </Button>
         ) : member.action ? (
-          <Button
-            className={ACTION_BUTTON}
-            disabled={member.busy}
-            onClick={member.run}
-          >
+          <Button size="action" disabled={member.busy} onClick={member.run}>
             {member.action.target === "paid" && <Lock aria-hidden />}
             {member.action.label}
           </Button>
         ) : paid ? (
           <Button
-            className={ACTION_BUTTON}
+            size="action"
             disabled={member.busy}
             onClick={member.showConfirmation}
           >
@@ -94,4 +86,4 @@ export function MemberProposal({ id }: { id: string }) {
       </ActionBar>
     </MemberShell>
   );
-}
+};

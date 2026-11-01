@@ -42,12 +42,12 @@ export function TimelineDay({
           </div>
         )}
         <ul>
-          {day.items.map((item, index) => {
+          {day.items.map((item) => {
             const category = CATEGORIES[item.category];
             const start = minutesOf(item.scheduledAt);
             return (
               <li
-                key={`${item.scheduledAt}-${index}`}
+                key={`${item.scheduledAt}-${item.title}`}
                 className="flex items-baseline gap-2.5 border-t py-2.5"
               >
                 <span className="text-muted-foreground w-21 shrink-0 text-sm tabular-nums">

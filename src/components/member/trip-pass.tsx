@@ -1,38 +1,11 @@
 import { CoastLine } from "@/components/member/coast-line";
+import { PassField } from "@/components/member/pass-field";
 import { formatDayLong, formatMoney } from "@/lib/proposals/format";
 import type { Reservation } from "@/lib/schemas/reservation";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 
-function PassField({
-  label,
-  value,
-  large = false,
-}: {
-  label: string;
-  value: string;
-  large?: boolean;
-}) {
-  return (
-    <div>
-      <dt className="text-primary-foreground/85 mb-0.5 text-xs tracking-widest uppercase">
-        {label}
-      </dt>
-      <dd
-        className={cn(
-          "tabular-nums",
-          large
-            ? "text-3xl leading-none tracking-tighter"
-            : "text-base font-medium",
-        )}
-      >
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-export function TripPass({
+export const TripPass = ({
   reservation,
   itemCount,
   totalCents,
@@ -44,7 +17,7 @@ export function TripPass({
   totalCents: number;
   paid: boolean;
   stamping: boolean;
-}) {
+}) => {
   const place = reservation.destination.split(",")[0];
 
   return (
@@ -98,4 +71,4 @@ export function TripPass({
       )}
     </article>
   );
-}
+};

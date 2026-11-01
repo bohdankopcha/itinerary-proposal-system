@@ -1,4 +1,5 @@
 import { Eyebrow } from "@/components/eyebrow";
+import { DateStat } from "@/components/member/date-stat";
 import { StatusBadge } from "@/components/status-badge";
 import { dateParts } from "@/lib/proposals/format";
 import { nightsBetween } from "@/lib/proposals/trip-days";
@@ -12,32 +13,13 @@ export const MEMBER_STATUS_LABELS: Record<ProposalStatus, string> = {
   paid: "Paid · Locked",
 };
 
-function DateStat({ label, date }: { label: string; date: string }) {
-  const { day, month, weekdayLong } = dateParts(date);
-  return (
-    <div className="flex flex-col">
-      <dt>
-        <Eyebrow>{label}</Eyebrow>
-      </dt>
-      <dd className="flex flex-col">
-        <span className="mt-1.5 text-4xl leading-none font-medium tracking-tighter tabular-nums">
-          {day}
-        </span>
-        <span className="text-muted-foreground text-sm">
-          {month} · {weekdayLong}
-        </span>
-      </dd>
-    </div>
-  );
-}
-
-export function MemberHeader({
+export const MemberHeader = ({
   reservation,
   status,
 }: {
   reservation: Reservation;
   status: ProposalStatus;
-}) {
+}) => {
   const place = reservation.destination.split(",")[0];
   const nights = nightsBetween(
     reservation.arrivalDate,
@@ -79,4 +61,4 @@ export function MemberHeader({
       </dl>
     </header>
   );
-}
+};

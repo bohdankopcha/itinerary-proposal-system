@@ -84,7 +84,7 @@ export function DayCards({
         )}
         {items.map((item, index) => (
           <PassCard
-            key={`${item.scheduledAt}-${index}`}
+            key={`${item.scheduledAt}-${item.title}`}
             item={item}
             open={explorer.openCard === index}
             offset={

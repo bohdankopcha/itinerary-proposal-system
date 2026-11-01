@@ -17,10 +17,10 @@ import { useConciergeDashboard } from "@/hooks/use-concierge-dashboard";
 import { STATUS_LABELS } from "@/lib/proposals/format";
 
 export function ConciergeDashboard() {
-  const d = useConciergeDashboard();
-  const { reservation } = d;
+  const dashboard = useConciergeDashboard();
+  const { reservation } = dashboard;
 
-  if (d.reservationsQuery.isPending) {
+  if (dashboard.reservationsQuery.isPending) {
     return (
       <ConciergeShell>
         <DashboardSkeleton />
@@ -28,13 +28,13 @@ export function ConciergeDashboard() {
     );
   }
 
-  if (d.reservationsQuery.isError) {
+  if (dashboard.reservationsQuery.isError) {
     return (
       <ConciergeShell>
         <div className="p-4 sm:p-8">
           <ErrorState
             message="Reservations could not be loaded."
-            onAction={() => void d.reservationsQuery.refetch()}
+            onAction={() => void dashboard.reservationsQuery.refetch()}
           />
         </div>
       </ConciergeShell>
@@ -57,46 +57,48 @@ export function ConciergeDashboard() {
   return (
     <ConciergeShell>
       <ConciergeTopBar
-        view={d.view}
-        proposalCount={d.proposalCount}
-        reservations={d.reservations}
+        view={dashboard.view}
+        proposalCount={dashboard.proposalCount}
+        reservations={dashboard.reservations}
         reservationId={reservation.id}
-        onViewChange={d.setView}
-        onReservationChange={d.selectReservation}
-        onOpenPalette={d.palette.show}
+        onViewChange={dashboard.setView}
+        onReservationChange={dashboard.selectReservation}
+        onOpenPalette={dashboard.palette.show}
       />
-      {d.view === "itinerary" ? (
-        <ItineraryView dashboard={d} reservation={reservation} />
+      {dashboard.view === "itinerary" ? (
+        <ItineraryView dashboard={dashboard} reservation={reservation} />
       ) : (
         <ProposalsView
-          currentProposalId={d.proposalId}
+          currentProposalId={dashboard.proposalId}
           clientName={reservation.member.name}
-          onOpen={d.openProposal}
-          onNew={d.startNewProposal}
+          onOpen={dashboard.openProposal}
+          onNew={dashboard.startNewProposal}
         />
       )}
 
-      <CommandPalette palette={d.palette} />
-      <CategoryPickerDialog editor={d.editor} />
-      <ItemSheet editor={d.editor} reservation={reservation} />
+      <CommandPalette palette={dashboard.palette} />
+      <CategoryPickerDialog editor={dashboard.editor} />
+      <ItemSheet editor={dashboard.editor} reservation={reservation} />
       <PreviewDialog
-        open={d.previewOpen}
-        onOpenChange={d.setPreviewOpen}
+        open={dashboard.previewOpen}
+        onOpenChange={dashboard.setPreviewOpen}
         reservation={reservation}
-        items={d.items}
-        notes={d.notes}
-        sendLabel={d.locked ? STATUS_LABELS[d.status] : "Send to client"}
-        canSend={d.canSend}
-        onSend={d.actions.send}
+        items={dashboard.items}
+        notes={dashboard.notes}
+        sendLabel={
+          dashboard.locked ? STATUS_LABELS[dashboard.status] : "Send to client"
+        }
+        canSend={dashboard.canSend}
+        onSend={dashboard.actions.send}
       />
       <SentDialog
-        result={d.actions.sentResult}
-        onClose={d.actions.dismissSent}
+        result={dashboard.actions.sentResult}
+        onClose={dashboard.actions.dismissSent}
       />
       <DiscardDialog
-        open={d.discard.open}
-        onConfirm={d.discard.confirm}
-        onCancel={d.discard.cancel}
+        open={dashboard.discard.open}
+        onConfirm={dashboard.discard.confirm}
+        onCancel={dashboard.discard.cancel}
       />
     </ConciergeShell>
   );

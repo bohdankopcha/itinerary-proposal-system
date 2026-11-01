@@ -37,6 +37,12 @@ Flow: `components` → `hooks` → `lib/api-client` → route handler in `app/` 
 
 - Write minimal comments; code should explain itself.
 - One file = one component.
+- Declare every function and component as an anonymous arrow function assigned to a `const`: `export const useMemberProposal = (id: string) => { ... }`. No `function` declarations.
+- Never declare functions inside a `return` statement (e.g. hook return objects); declare them above and reference them. One-line arrow functions are fine inline.
+- Use descriptive names; no single-letter or cryptic variable names (`dashboard`, not `d`).
+- Never use the `map` index as part of a `key`; derive keys from the item's data.
+- Prefer short formats: `if (cond) return <X />;` instead of braces around a single statement.
+- Variations of shared UI (sizes, emphasis) belong in the component's variants (e.g. `Button` `size`), not in per-screen class constants.
 - Separate business logic from UI as much as possible: logic lives in `lib/` and hooks, components only render.
 - Move component logic into hooks.
 - Avoid unnecessary `useEffect`; derive values during render or use event handlers and TanStack Query.
