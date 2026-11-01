@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Concierge Itinerary Proposals",
-  description: "Concierge itinerary proposals",
+  title: "Detour",
+  description: "Curated itinerary proposals for luxury stays",
 };
 
 export default function RootLayout({

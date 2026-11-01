@@ -6,7 +6,7 @@ import { MemberShell } from "@/components/member/member-shell";
 import { MemberSkeleton } from "@/components/member/member-skeleton";
 
 export const metadata: Metadata = {
-  title: "Your itinerary",
+  title: "Your itinerary · Detour",
   description: "Review, approve and lock in your private itinerary.",
 };
 

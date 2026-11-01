@@ -34,7 +34,7 @@ export function ConciergeTopBar({
           aria-hidden
           className="bg-foreground after:border-background relative size-5.5 rounded-md after:absolute after:inset-1.5 after:rounded-full after:border"
         />
-        Concierge
+        Detour
       </div>
       <nav aria-label="Views" className="bg-muted flex gap-0.5 rounded-xl p-1">
         {TABS.map((tab) => {

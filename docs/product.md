@@ -2,7 +2,7 @@
 
 ## What this is
 
-A small internal tool for a luxury resort-travel concierge team. A concierge assembles a curated itinerary for a member's upcoming stay, sends it to the member as a proposal, and the member reviews, approves, and "pays" to lock it in. Payment and email are simulated.
+**Detour** is a small internal tool for a luxury resort-travel concierge team. A concierge assembles a curated itinerary for a member's upcoming stay, sends it to the member as a proposal, and the member reviews, approves, and "pays" to lock it in. Payment and email are simulated.
 
 Success = the full loop works end to end: **create → send → approve → pay**, and the two UIs feel right for their audiences (see [design.md](design.md)).
 

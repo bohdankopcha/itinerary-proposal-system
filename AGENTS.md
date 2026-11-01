@@ -1,6 +1,6 @@
-# concierge-itinerary-proposals
+# Detour
 
-Concierge itinerary proposals app: a single Next.js project (UI + API route handlers) backed by SQLite via Prisma.
+Concierge itinerary proposals app (product name: Detour): a single Next.js project (UI + API route handlers) backed by SQLite via Prisma.
 
 ## Stack
 

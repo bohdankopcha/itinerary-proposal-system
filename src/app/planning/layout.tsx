@@ -5,7 +5,7 @@ import { ConciergeDashboard } from "@/components/concierge/concierge-dashboard";
 import { ConciergeShell } from "@/components/concierge/concierge-shell";
 import { DashboardSkeleton } from "@/components/concierge/dashboard-skeleton";
 
-export const metadata: Metadata = { title: "Concierge planning" };
+export const metadata: Metadata = { title: "Planning · Detour" };
 
 const PlanningLayout = ({ children }: { children: ReactNode }) => (
   <>
