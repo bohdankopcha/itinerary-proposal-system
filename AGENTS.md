@@ -20,20 +20,30 @@ Next.js (App Router) · React · TypeScript (strict) · Tailwind CSS · shadcn/u
 
 ## Structure
 
-- `src/app/` – Next.js App Router (pages, layouts, route handlers)
-- `src/components/` – React components (shadcn/ui in `ui/`)
-- `src/hooks/` – React hooks
+- `src/app/` – routing only: pages, layouts, route handlers. Thin; compose components and call `lib/`
+- `src/components/` – UI only: one component per file (shadcn/ui in `ui/`)
+- `src/hooks/` – React hooks holding component logic (state, queries, handlers)
 - `src/lib/db/` – Prisma client singleton
-- `src/lib/proposals/` – framework-agnostic domain logic
-- `src/lib/schemas/` – zod schemas
-- `src/lib/api-client/` – typed fetch client
+- `src/lib/proposals/` – framework-agnostic business logic (no React, no Next.js)
+- `src/lib/schemas/` – zod schemas and API contracts (`z.infer` types)
+- `src/lib/api-client/` – typed fetch client used by hooks
 - `prisma/` – schema, migrations, seed
 - `docs/` – documentation
 - `.claude/` – Claude Code settings and skills
 
+Flow: `components` → `hooks` → `lib/api-client` → route handler in `app/` → `lib/proposals` → `lib/db`. Put new code in the folder that matches its role; don't create new top-level folders without asking.
+
 ## Conventions
 
-To be filled in
+- Write minimal comments; code should explain itself.
+- One file = one component.
+- Separate business logic from UI as much as possible: logic lives in `lib/` and hooks, components only render.
+- Move component logic into hooks.
+- Avoid unnecessary `useEffect`; derive values during render or use event handlers and TanStack Query.
+- Keep types next to the code that uses them. No per-component `types` folders.
+- API contracts live in `lib/schemas` as zod schemas, with types from `z.infer`.
+- Avoid prop drilling; if needed, use React context. Ask the user for approval before introducing a context.
+- Follow the file structure above.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
