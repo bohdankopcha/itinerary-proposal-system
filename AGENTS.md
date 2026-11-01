@@ -51,8 +51,6 @@ Flow: `components` → `hooks` → `lib/api-client` → route handler in `app/` 
 - Avoid prop drilling; if needed, use React context. Ask the user for approval before introducing a context.
 - Follow the file structure above.
 
-<!-- BEGIN:nextjs-agent-rules -->
-
 ## Docs
 
 Before starting a task, read the relevant file in `docs/`:
@@ -65,6 +63,8 @@ Before starting a task, read the relevant file in `docs/`:
 - [`docs/decisions.md`](docs/decisions.md) – what was chosen and why; assumptions
 
 Rule: if you change behavior, update the matching file in `docs/` in the same change. Docs hold intent and rationale only; never copy what code already says (fields, payloads), link to it.
+
+<!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
 

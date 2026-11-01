@@ -1,7 +1,6 @@
 "use client";
 
 import { CommandPalette } from "@/components/concierge/command-palette";
-import { CategoryPickerDialog } from "@/components/concierge/category-picker-dialog";
 import { ConciergeShell } from "@/components/concierge/concierge-shell";
 import { ConciergeTopBar } from "@/components/concierge/concierge-top-bar";
 import { DashboardSkeleton } from "@/components/concierge/dashboard-skeleton";
@@ -77,7 +76,6 @@ export function ConciergeDashboard() {
       )}
 
       <CommandPalette palette={dashboard.palette} />
-      <CategoryPickerDialog editor={dashboard.editor} />
       <ItemSheet editor={dashboard.editor} reservation={reservation} />
       <PreviewDialog
         open={dashboard.previewOpen}

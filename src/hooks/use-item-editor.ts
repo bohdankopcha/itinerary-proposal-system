@@ -1,10 +1,13 @@
 import { useState } from "react";
 
-import { CATEGORIES } from "@/lib/proposals/categories";
+import { CATEGORIES, itemDurationMinutes } from "@/lib/proposals/categories";
 import {
   DAY_END_MINUTES,
   DAY_START_MINUTES,
+  durationBetween,
   pageOfDay,
+  parseEndInput,
+  toEndInput,
 } from "@/lib/proposals/calendar";
 import type { DraftItem } from "@/lib/proposals/draft";
 import { firstOpenDate } from "@/lib/proposals/itinerary";
@@ -28,13 +31,14 @@ export type ItemFormValues = {
   description: string;
   date: string;
   time: string;
+  endTime: string;
   price: string;
 };
 
-type PickerTarget = { date: string | null; minutes: number | null };
 type SheetState = { key: string | null; form: ItemFormValues };
 
 const FLASH_MS = 1400;
+const DEFAULT_CATEGORY: ItemCategory = "dining";
 
 const priceToInput = (cents: number) => (cents ? String(cents / 100) : "");
 const inputToCents = (value: string) => {
@@ -57,7 +61,6 @@ export function useItemEditor({
   locked: boolean;
   onItemPlaced: (page: number) => void;
 }) {
-  const [picker, setPicker] = useState<PickerTarget | null>(null);
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
 
@@ -66,27 +69,23 @@ export function useItemEditor({
     setTimeout(() => setFlashKey(null), FLASH_MS);
   }
 
-  function openPicker(
-    date: string | null = null,
-    minutes: number | null = null,
-  ) {
+  function openNew(date: string | null = null, minutes: number | null = null) {
     if (locked) return;
-    setSheet(null);
-    setPicker({ date, minutes });
-  }
-
-  function chooseCategory(category: ItemCategory) {
-    const target = picker;
-    setPicker(null);
+    const category = DEFAULT_CATEGORY;
+    const start = minutes ?? CATEGORIES[category].defaultStartMinutes;
     setSheet({
       key: null,
       form: {
         category,
         title: "",
         description: "",
-        date: target?.date ?? firstOpenDate(items, reservation),
-        time: toTimeInput(
-          target?.minutes ?? CATEGORIES[category].defaultStartMinutes,
+        date: date ?? firstOpenDate(items, reservation),
+        time: toTimeInput(start),
+        endTime: toEndInput(
+          Math.min(
+            start + CATEGORIES[category].durationMinutes,
+            DAY_END_MINUTES,
+          ),
         ),
         price: "",
       },
@@ -102,6 +101,9 @@ export function useItemEditor({
         description: item.description,
         date: dateOf(item.scheduledAt),
         time: toTimeInput(minutesOf(item.scheduledAt)),
+        endTime: toEndInput(
+          minutesOf(item.scheduledAt) + itemDurationMinutes(item),
+        ),
         price: priceToInput(item.priceCents),
       },
     });
@@ -111,15 +113,29 @@ export function useItemEditor({
     field: K,
     value: ItemFormValues[K],
   ) {
-    setSheet((current) =>
-      current
-        ? { ...current, form: { ...current.form, [field]: value } }
-        : current,
-    );
+    setSheet((current) => {
+      if (!current) return current;
+      const next = { ...current.form, [field]: value };
+      if (field === "time") {
+        const previousStart = parseTimeInput(current.form.time);
+        const previousEnd = parseEndInput(current.form.endTime);
+        const start = parseTimeInput(String(value));
+        if (previousStart !== null && previousEnd !== null && start !== null)
+          next.endTime = toEndInput(
+            Math.min(start + previousEnd - previousStart, DAY_END_MINUTES),
+          );
+      }
+      return { ...current, form: next };
+    });
   }
 
   const form = sheet?.form;
   const minutes = form ? parseTimeInput(form.time) : null;
+  const endMinutes = form ? parseEndInput(form.endTime) : null;
+  const durationMinutes =
+    minutes !== null && endMinutes !== null
+      ? durationBetween(minutes, endMinutes)
+      : null;
   const priceCents = form ? inputToCents(form.price) : null;
   const canSubmit =
     !locked &&
@@ -128,7 +144,7 @@ export function useItemEditor({
     form.description.trim() !== "" &&
     minutes !== null &&
     minutes >= DAY_START_MINUTES &&
-    minutes <= DAY_END_MINUTES - 30 &&
+    durationMinutes !== null &&
     priceCents !== null;
 
   function submit() {
@@ -137,6 +153,7 @@ export function useItemEditor({
       !form ||
       !canSubmit ||
       minutes === null ||
+      durationMinutes === null ||
       priceCents === null
     )
       return;
@@ -146,6 +163,7 @@ export function useItemEditor({
       description: form.description.trim(),
       scheduledAt: toScheduledAt(form.date, minutes),
       priceCents,
+      durationMinutes,
     };
     const key = sheet.key
       ? (builder.updateItem(sheet.key, fields), sheet.key)
@@ -180,12 +198,10 @@ export function useItemEditor({
   }
 
   function close() {
-    setPicker(null);
     setSheet(null);
   }
 
   return {
-    picker,
     sheet: sheet && {
       isNew: sheet.key === null,
       form: sheet.form,
@@ -194,8 +210,8 @@ export function useItemEditor({
     flashKey,
     flash,
     canSubmit,
-    openPicker,
-    chooseCategory,
+    timeRangeValid: durationMinutes !== null || minutes === null,
+    openNew,
     openItem,
     setField,
     submit,

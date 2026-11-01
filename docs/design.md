@@ -44,6 +44,11 @@ Two intentionally different views in one app. Tokens live in `src/app/globals.cs
 - **Preview parity:** the concierge Preview renders the same header, note and itinerary components as a `sent` proposal (without the bar), so it matches what the member sees.
 - **Generated, not stored:** the confirmation number is derived from destination initials, arrival date and the proposal id (see `formatConfirmationNumber`). The concierge is shown as "Your concierge" because the model has no concierge name. The postcard map is decorative art; the villa name is the only per-stay label (no coordinates exist).
 
+## Scrollbars and cursors
+
+- **Scrollbars:** every scroll container (including horizontal and the schedule planner) gets a thin 6px rounded thumb on a transparent track from a global base rule in `globals.css`, colored by `--scrollbar-thumb` / `--scrollbar-thumb-hover` (light and dark). No per-component scrollbar classes.
+- **Cursors:** interactive elements show `cursor-pointer` via the `Button` base classes, the `Select` trigger and items, and a base-layer rule for enabled buttons and `role=button|tab|option|menuitem`. Disabled controls keep `pointer-events-none` (or `cursor-not-allowed`). Don't add cursor classes per screen.
+
 ## Token names (to define in `globals.css`)
 
 Reuse the existing shadcn semantic tokens (`background`, `foreground`, `primary`, `muted`, `border`, `ring`, â€¦). Add only:
@@ -61,7 +66,7 @@ Source: Claude Design canvas "Concierge Itinerary Proposal" (boards `Concierge Â
 **Concierge deviations from the provisional direction above** (the design wins):
 
 - Top bar holds the Itinerary / Proposals tabs and the reservation switcher. The proposals list is its own tab (`?view=proposals`) and shows **all clients**, with the current proposal highlighted, rather than a column beside the builder.
-- The builder is a week planner (7 days per page, 7 AM to midnight), not a list of items. Category cards open in a dialog, the item form in a right sheet. Event heights come from a fixed per-category duration (items have no end time). Clicking a block edits it; double-clicking a day or "Add item" starts a new one.
+- The builder is a week planner (7 days per page, 7 AM to midnight), not a list of items. The item form (category pills, title, description, date, start and end time, price) is a right sheet. Event height comes from the item's duration, defaulting to a per-category duration until it is set. Clicking a block edits it; double-clicking a day or "Add item" opens the item sheet directly in create mode (no category dialog; category is a pill group in the sheet).
 - Beside the planner sits one proposal panel: note, running total, per-category breakdown, **Preview**, **Save draft**, **Send**.
 - Send success is a dialog showing the server's email record; afterwards the proposal stays open, locked and read only (the builder does not reset). Starting another proposal goes through the Proposals tab.
 - No toasts: save results and errors show inline in the proposal panel.
@@ -72,6 +77,10 @@ Source: Claude Design canvas "Concierge Itinerary Proposal" (boards `Concierge Â
 **Concierge shortcuts:**
 
 - **âŒ˜K / Ctrl+K palette** (also the top-bar button): commands (add item, preview, send, switch view, new proposal, switch client) plus quick add. Typing "sunset cocktails fri 7pm 260" parses category, day, time and price into a live preview and creates the item on Enter. Missing parts default to the first open day, the category's usual start time and $0; a quick-added item gets a neutral description the concierge can edit.
+- **Overlaps:** items overlapping in time within a day split that day column side by side (equal widths per overlap cluster, packed by `layoutOverlaps` in `src/lib/proposals/`); layout updates live while resizing.
+- **Resize:** drag a block's top or bottom edge (pointer events) to change start or end; 15-minute snap, 30-minute minimum, clamped to the visible day. Applies to the local draft like any edit (persisted by Save draft); locked proposals show no handles. The sheet's end time edits the same duration.
+- **Block hover:** lift, shadow elevation and ring emphasis; no lift under reduced motion.
+- **Flights:** the client's landing time (first day) and departure time (last day) are drawn as a labeled line across the day column at that time.
 - **Drag to reschedule:** blocks move between days and times in 15-minute steps with a dashed ghost; mouse only, the item sheet is the keyboard and touch route. Locked proposals do not drag.
 
-**Not ported from the design:** the other three themes, and the night-hours / flight-time markers (no such data exists in the model). Item times are limited to the visible 7:00 to 23:30 range.
+**Not ported from the design:** the other three themes, and the night-hours (sunrise/sunset) markers (no such data exists in the model). Item times are limited to the visible 7:00 to 23:30 range.

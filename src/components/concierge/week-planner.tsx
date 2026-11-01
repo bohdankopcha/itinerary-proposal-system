@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import {
   CALENDAR_HOURS,
   DAYS_PER_PAGE,
+  flightForDay,
   pageCount,
 } from "@/lib/proposals/calendar";
 import type { PlannerDrag } from "@/hooks/use-planner-drag";
+import type { PlannerResize } from "@/hooks/use-planner-resize";
 import type { DraftItem } from "@/lib/proposals/draft";
 import { formatDayShort, formatHourLabel } from "@/lib/proposals/format";
 import { groupByDay } from "@/lib/proposals/itinerary";
@@ -21,6 +23,7 @@ export function WeekPlanner({
   page,
   flashKey,
   drag,
+  resize,
   onPageChange,
   onAdd,
   onOpenItem,
@@ -31,6 +34,7 @@ export function WeekPlanner({
   page: number;
   flashKey: string | null;
   drag: PlannerDrag;
+  resize: PlannerResize;
   onPageChange: (page: number) => void;
   onAdd: (date?: string, minutes?: number | null) => void;
   onOpenItem: (item: DraftItem) => void;
@@ -93,13 +97,11 @@ export function WeekPlanner({
           </div>
         )}
         <div className="text-muted-foreground ml-auto flex items-center gap-2 text-sm">
-          {locked ? (
+          {locked && (
             <span className="bg-muted text-foreground inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium">
               <Lock aria-hidden className="size-3" />
               Read only
             </span>
-          ) : (
-            <span>Drag to reschedule · double-click a day to add</span>
           )}
         </div>
       </div>
@@ -144,9 +146,11 @@ export function WeekPlanner({
               key={day.date}
               date={day.date}
               items={day.items}
+              flight={flightForDay(reservation, day.index, days.length)}
               locked={locked}
               flashKey={flashKey}
               drag={drag}
+              resize={resize}
               onAdd={onAdd}
               onOpenItem={onOpenItem}
             />

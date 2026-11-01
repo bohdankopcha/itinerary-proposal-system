@@ -1,10 +1,9 @@
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export type ConciergeView = "itinerary" | "proposals";
 
 export function useConciergeParams() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   function update(changes: Record<string, string | null>) {
@@ -14,9 +13,11 @@ export function useConciergeParams() {
       else next.set(key, value);
     }
     const query = next.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
-    });
+    window.history.replaceState(
+      null,
+      "",
+      query ? `${pathname}?${query}` : pathname,
+    );
   }
 
   return {

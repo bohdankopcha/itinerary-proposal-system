@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 
 import { dropStartMinutes } from "@/lib/proposals/calendar";
-import { CATEGORIES } from "@/lib/proposals/categories";
+import { itemDurationMinutes } from "@/lib/proposals/categories";
 import type { DraftItem } from "@/lib/proposals/draft";
 import { toScheduledAt } from "@/lib/proposals/trip-days";
 
@@ -28,7 +28,7 @@ export function usePlannerDrag({
 
   function targetFor(date: string, event: React.DragEvent<HTMLElement>) {
     if (!dragging) return null;
-    const durationMinutes = CATEGORIES[dragging.category].durationMinutes;
+    const durationMinutes = itemDurationMinutes(dragging);
     const offsetY =
       event.clientY - event.currentTarget.getBoundingClientRect().top;
     return {

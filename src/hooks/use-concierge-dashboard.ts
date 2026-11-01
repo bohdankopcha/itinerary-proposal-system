@@ -7,6 +7,7 @@ import { useConciergeParams, type ConciergeView } from "./use-concierge-params";
 import { useDraftBuilder } from "./use-draft-builder";
 import { useItemEditor } from "./use-item-editor";
 import { usePlannerDrag } from "./use-planner-drag";
+import { usePlannerResize } from "./use-planner-resize";
 import { useProposal } from "./use-proposal";
 import { useProposalActions } from "./use-proposal-actions";
 import { useProposalList } from "./use-proposal-list";
@@ -86,6 +87,12 @@ export function useConciergeDashboard() {
 
   const drag = usePlannerDrag({ locked, builder, onMoved: editor.flash });
 
+  const resize = usePlannerResize({
+    locked,
+    builder,
+    onResized: editor.flash,
+  });
+
   const setView = (view: ConciergeView) =>
     params.update({ view: view === "proposals" ? "proposals" : null });
   const selectReservation = (id: string) => {
@@ -107,7 +114,7 @@ export function useConciergeDashboard() {
     view: params.view,
     canSend,
     onOpen: editor.close,
-    onAddItem: () => editor.openPicker(),
+    onAddItem: () => editor.openNew(),
     onQuickAdd: editor.quickAdd,
     onPreview: () => setPreviewOpen(true),
     onSend: actions.send,
@@ -136,6 +143,7 @@ export function useConciergeDashboard() {
     builder,
     editor,
     drag,
+    resize,
     palette,
     actions,
     page,
@@ -168,6 +176,8 @@ const EMPTY_RESERVATION = {
   villa: "",
   arrivalDate: "1970-01-01",
   departureDate: "1970-01-01",
+  arrivalMinutes: null,
+  departureMinutes: null,
   member: { id: "", name: "", email: "" },
 };
 

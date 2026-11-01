@@ -30,6 +30,8 @@ A reservation may have several proposals (alternatives or revisions). The dashbo
 - **Only drafts are mutable.** Items and notes can change while `draft`; from `sent` on, the member approves exactly what they saw. Enforced in the domain layer.
 - **Editing a draft replaces its items wholesale** in one transaction (delete all, insert the new set). Item ids are not stable across edits and nothing may reference them.
 - **Dates and times are resort wall-clock.** Arrival/departure are calendar dates; item `scheduledAt` is stored as a UTC `DateTime` that is _interpreted as local resort time_ and displayed with `timeZone: "UTC"`. No timezone conversion anywhere. This avoids off-by-one-day bugs. Day grouping and "Day N" labels derive from the date part and the reservation's arrival date.
+- **Flight times are minutes since midnight in resort time** (`arrivalMinutes` on the first day, `departureMinutes` on the last), optional. They only drive the planner markers.
+- **Item duration is optional** (`durationMinutes`, null = the category default). The end time is derived (start + duration) and must stay within the visible day; there is no stored end timestamp.
 - **Item time must fall within the proposal's reservation, arrival to departure inclusive of both days.** Needs the reservation, so it is validated in `src/lib/proposals/`, not only in the zod schema.
 - **IDs are opaque random strings (cuid).** With no auth, the unguessable id in `/proposal/[id]` is the access control for the member link.
 

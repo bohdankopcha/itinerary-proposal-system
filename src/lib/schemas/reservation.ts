@@ -13,6 +13,8 @@ export const reservationSchema = z.object({
   villa: z.string(),
   arrivalDate: z.iso.date(),
   departureDate: z.iso.date(),
+  arrivalMinutes: z.number().int().min(0).max(1439).nullable(),
+  departureMinutes: z.number().int().min(0).max(1439).nullable(),
   member: memberSchema,
 });
 export type Reservation = z.infer<typeof reservationSchema>;

@@ -54,8 +54,9 @@ export function ItineraryView({
                 page={d.page}
                 flashKey={d.editor.flashKey}
                 drag={d.drag}
+                resize={d.resize}
                 onPageChange={d.setPage}
-                onAdd={d.editor.openPicker}
+                onAdd={d.editor.openNew}
                 onOpenItem={d.editor.openItem}
               />
             </div>

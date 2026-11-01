@@ -37,6 +37,8 @@ export const toReservation = (row: ReservationRow): Reservation => ({
   villa: row.villa,
   arrivalDate: isoDate(row.arrivalDate),
   departureDate: isoDate(row.departureDate),
+  arrivalMinutes: row.arrivalMinutes,
+  departureMinutes: row.departureMinutes,
   member: { id: row.member.id, name: row.member.name, email: row.member.email },
 });
 
@@ -58,6 +60,7 @@ export const toProposal = (row: ProposalRow): Proposal => ({
     description: item.description,
     scheduledAt: item.scheduledAt.toISOString(),
     priceCents: item.priceCents,
+    durationMinutes: item.durationMinutes,
   })),
 });
 

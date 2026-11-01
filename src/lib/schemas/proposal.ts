@@ -29,6 +29,7 @@ export const proposalItemInputSchema = z.object({
   description: requiredText(1000),
   scheduledAt: z.iso.datetime(),
   priceCents: z.number().int().min(0),
+  durationMinutes: z.number().int().min(15).max(1020).nullish(),
 });
 export type ProposalItemInput = z.infer<typeof proposalItemInputSchema>;
 
@@ -70,6 +71,7 @@ export const proposalItemSchema = z.object({
   description: z.string(),
   scheduledAt: z.iso.datetime(),
   priceCents: z.number().int(),
+  durationMinutes: z.number().int().nullable(),
 });
 export type ProposalItem = z.infer<typeof proposalItemSchema>;
 

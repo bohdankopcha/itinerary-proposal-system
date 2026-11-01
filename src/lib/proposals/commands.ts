@@ -20,6 +20,7 @@ const toItemData = (item: ProposalItemInput) => ({
   description: item.description,
   scheduledAt: new Date(item.scheduledAt),
   priceCents: item.priceCents,
+  durationMinutes: item.durationMinutes ?? null,
 });
 
 export async function createProposal(input: CreateProposalData) {

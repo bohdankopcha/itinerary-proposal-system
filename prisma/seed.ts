@@ -27,6 +27,8 @@ const reservations = [
     villa: "Villa Punta Mita",
     arrivalDate: new Date("2027-03-15T00:00:00.000Z"),
     departureDate: new Date("2027-03-22T00:00:00.000Z"),
+    arrivalMinutes: 11 * 60 + 40,
+    departureMinutes: 15 * 60,
   },
   {
     id: "reservation_cabo_azul",
@@ -35,6 +37,8 @@ const reservations = [
     villa: "Villa Cabo Azul",
     arrivalDate: new Date("2027-04-05T00:00:00.000Z"),
     departureDate: new Date("2027-04-12T00:00:00.000Z"),
+    arrivalMinutes: 14 * 60 + 15,
+    departureMinutes: 12 * 60 + 30,
   },
   {
     id: "reservation_maya_sol",
@@ -43,6 +47,8 @@ const reservations = [
     villa: "Villa Maya Sol",
     arrivalDate: new Date("2027-05-10T00:00:00.000Z"),
     departureDate: new Date("2027-05-17T00:00:00.000Z"),
+    arrivalMinutes: 10 * 60 + 5,
+    departureMinutes: 17 * 60 + 45,
   },
 ];
 

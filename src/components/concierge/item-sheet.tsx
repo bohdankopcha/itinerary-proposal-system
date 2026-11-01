@@ -80,7 +80,8 @@ export function ItemSheet({
                       disabled={sheet.readOnly}
                       onClick={() => editor.setField("category", category.id)}
                       className={cn(
-                        "border-input bg-field focus-visible:ring-ring flex min-h-11 items-center gap-2 rounded-xl border px-2.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+                        "border-input bg-field focus-visible:ring-ring flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border px-2.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+                        CATEGORY_STYLES[category.id].hover,
                         form.category === category.id &&
                           CATEGORY_STYLES[category.id].selected,
                       )}
@@ -129,31 +130,32 @@ export function ItemSheet({
                 />
               </div>
 
-              <div className="grid grid-cols-5 gap-2.5">
-                <div className="col-span-3 flex flex-col gap-2">
-                  <Label htmlFor="item-date">Date</Label>
-                  <Select
-                    value={form.date}
-                    items={dateItems}
-                    disabled={sheet.readOnly}
-                    onValueChange={(next) =>
-                      next && editor.setField("date", next)
-                    }
-                  >
-                    <SelectTrigger id="item-date" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent alignItemWithTrigger={false}>
-                      {dateItems.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="col-span-2 flex flex-col gap-2">
-                  <Label htmlFor="item-time">Time</Label>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="item-date">Date</Label>
+                <Select
+                  value={form.date}
+                  items={dateItems}
+                  disabled={sheet.readOnly}
+                  onValueChange={(next) =>
+                    next && editor.setField("date", next)
+                  }
+                >
+                  <SelectTrigger id="item-date" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent alignItemWithTrigger={false}>
+                    {dateItems.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="item-time">Start</Label>
                   <Input
                     id="item-time"
                     type="time"
@@ -169,10 +171,35 @@ export function ItemSheet({
                     }
                   />
                 </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="item-end-time">End</Label>
+                  <Input
+                    id="item-end-time"
+                    type="time"
+                    step={900}
+                    required
+                    aria-invalid={!editor.timeRangeValid}
+                    disabled={sheet.readOnly}
+                    value={form.endTime}
+                    className="tabular-nums"
+                    onChange={(event) =>
+                      editor.setField("endTime", event.target.value)
+                    }
+                  />
+                </div>
+                {!editor.timeRangeValid && (
+                  <p
+                    role="alert"
+                    className="text-destructive col-span-2 text-sm"
+                  >
+                    End must be at least 30 minutes after the start, by
+                    midnight.
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="item-price">Estimated price, USD</Label>
+                <Label htmlFor="item-price">Estimated price</Label>
                 <div className="relative">
                   <span
                     aria-hidden

@@ -105,12 +105,6 @@ export function ProposalsView({
           </div>
         </Panel>
       )}
-
-      {rows.length > 0 && (
-        <div>
-          <Button onClick={onNew}>New proposal for {clientName}</Button>
-        </div>
-      )}
     </section>
   );
 }

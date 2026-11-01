@@ -263,6 +263,8 @@
     inset 0 1px 0 rgb(255 255 255 / 0.9),
     0 30px 60px -36px rgb(160 30 10 / 0.45);
   --scrim: rgb(60 10 0 / 0.22);
+  --scrollbar-thumb: rgb(90 25 10 / 0.22);
+  --scrollbar-thumb-hover: rgb(90 25 10 / 0.4);
 
   --status-sent: #ff2e63;
   --status-approved: #ff8a00;
@@ -291,6 +293,12 @@
   --ambient-rose:
     radial-gradient(40% 36% at 88% 12%, rgb(255 46 99 / 0.15), transparent 70%),
     radial-gradient(30% 28% at 52% 52%, rgb(255 176 32 / 0.08), transparent 70%);
+  --ambient-flutes: linear-gradient(
+    to right,
+    rgb(255 255 255 / 0.1),
+    rgb(255 255 255 / 0.04) 50%,
+    rgb(255 255 255 / 0.1)
+  );
 }
 
 .dark {
@@ -325,6 +333,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --scrollbar-thumb: oklch(1 0 0 / 22%);
+  --scrollbar-thumb-hover: oklch(1 0 0 / 40%);
 }
 
 @layer base {
@@ -336,6 +346,34 @@
   }
   html {
     @apply font-sans;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  summary,
+  select {
+    cursor: pointer;
   }
 }
 
