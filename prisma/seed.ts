@@ -1,4 +1,5 @@
 import { db } from "../src/lib/db/client";
+import { proposals } from "./seed-proposals";
 
 const members = [
   {
@@ -58,6 +59,13 @@ async function main() {
       where: { id },
       create: { id, ...data },
       update: data,
+    });
+  }
+  for (const { id, items, ...data } of proposals) {
+    const exists = await db.proposal.findUnique({ where: { id } });
+    if (exists) continue;
+    await db.proposal.create({
+      data: { id, ...data, items: { create: items } },
     });
   }
 }
