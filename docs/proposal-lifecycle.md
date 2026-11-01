@@ -34,7 +34,7 @@ Not a status transition. `PUT /api/proposals/[id]` replaces the note and items o
 - **Atomic and race-safe.** Apply a transition as a conditional write (`where: { id, status: from }`) and treat zero rows updated as `INVALID_TRANSITION`. Two concurrent approvals must not both succeed. The same guard (`status: "draft"`) protects edits.
 - **Send is all-or-nothing.** A status change without an email record (or vice versa) must be impossible; use a transaction. Console logging happens after commit.
 - **Email content** (`SentEmail.bodyPreview`): short plain text: greeting, destination and dates, item count, total, the note if present, and the absolute link to `/proposal/[id]` (base URL from env, with a localhost default). Sent to the reservation's member.
-- **Member view per status** (see [design.md](design.md)): `draft` → "not available" page; `sent` → itinerary + **Approve**; `approved` → itinerary + **Pay & Lock In**; `paid` → animated confirmation. The buttons are derived from the transition table, not hard-coded per status.
+- **Member view per status** (see [design.md](design.md)): `draft` → "not available" page; `sent` → itinerary + **Approve**; `approved` → trip pass + **Pay & Lock In**; `paid` → animated confirmation. The buttons are derived from the transition table, not hard-coded per status.
 
 ## Optimistic updates (client)
 

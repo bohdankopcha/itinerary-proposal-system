@@ -16,7 +16,7 @@ Three members, one upcoming reservation each. The first is the primary demo scen
 | Amelia Hart                                 | Villa Cabo Azul, Cabo San Lucas, Mexico, different dates   |
 | Daniel Okafor                               | Villa Maya Sol, Riviera Maya, Mexico, different dates      |
 
-Year is 2027 so every stay is upcoming. Members and reservations are seeded only; the UI cannot create or edit them. Exact values live in `prisma/seed.ts`.
+Year is 2027 so every stay is upcoming. Members and reservations are seeded only; the UI cannot create or edit them. Each reservation also has one seeded draft proposal with a full itinerary (see [data-model.md](data-model.md)). Exact values live in `prisma/seed.ts` and `prisma/seed-proposals.ts`.
 
 ## Roles
 
