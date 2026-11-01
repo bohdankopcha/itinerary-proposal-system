@@ -7,8 +7,7 @@ import { formatMoney } from "@/lib/proposals/format";
 import { totalCents } from "@/lib/proposals/totals";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-/** The member-facing itinerary as it appears for a sent proposal, without the action bar. */
-export function ProposalPresentation({
+export const ProposalPresentation = ({
   reservation,
   notes,
   items,
@@ -16,7 +15,7 @@ export function ProposalPresentation({
   reservation: Reservation;
   notes: string;
   items: ExplorerItem[];
-}) {
+}) => {
   return (
     <div className="bg-background flex flex-col gap-5.5 rounded-3xl border p-4 sm:p-6">
       <MemberHeader reservation={reservation} status="sent" />
@@ -30,4 +29,4 @@ export function ProposalPresentation({
       </div>
     </div>
   );
-}
+};

@@ -22,7 +22,7 @@ type Phase = "collapse" | "lock";
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-export function useMemberProposal(id: string) {
+export const useMemberProposal = (id: string) => {
   const query = useProposal(id);
   const approve = useApproveProposal();
   const pay = usePayProposal();
@@ -53,7 +53,7 @@ export function useMemberProposal(id: string) {
         : "Something went wrong. Please try again.",
     );
 
-  async function approveProposal() {
+  const approveProposal = async () => {
     setError(null);
     setScreen("main");
     setShowDetails(false);
@@ -66,9 +66,9 @@ export function useMemberProposal(id: string) {
     await wait(COLLAPSE_MS);
     setPhase(null);
     scrollToTop();
-  }
+  };
 
-  async function payProposal() {
+  const payProposal = async () => {
     setError(null);
     setScreen("main");
     setShowDetails(false);
@@ -83,7 +83,7 @@ export function useMemberProposal(id: string) {
     } finally {
       setPhase(null);
     }
-  }
+  };
 
   return {
     proposal,
@@ -113,6 +113,6 @@ export function useMemberProposal(id: string) {
       scrollToTop();
     },
   };
-}
+};
 
 export type MemberProposalState = ReturnType<typeof useMemberProposal>;
