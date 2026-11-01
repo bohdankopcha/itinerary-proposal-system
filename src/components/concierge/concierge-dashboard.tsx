@@ -15,11 +15,11 @@ import { ErrorState } from "@/components/error-state";
 import { useConciergeDashboard } from "@/hooks/use-concierge-dashboard";
 import { STATUS_LABELS } from "@/lib/proposals/format";
 
-export function ConciergeDashboard() {
+export const ConciergeDashboard = () => {
   const dashboard = useConciergeDashboard();
   const { reservation } = dashboard;
 
-  if (dashboard.reservationsQuery.isPending) {
+  if (dashboard.reservationsQuery.isPending || dashboard.resolvingReservation) {
     return (
       <ConciergeShell>
         <DashboardSkeleton />
@@ -100,4 +100,4 @@ export function ConciergeDashboard() {
       />
     </ConciergeShell>
   );
-}
+};

@@ -6,6 +6,6 @@ export const AmbientBackground = () => (
     <div className="absolute inset-0 bg-(image:--ambient-warm)" />
     <div className="absolute inset-0 bg-(image:--ambient-rose)" />
     <div className="absolute inset-0 bg-(image:--ambient-flutes)" />
-    <div className="bg-grain absolute inset-0 opacity-20 mix-blend-overlay" />
+    <div className="bg-grain absolute inset-0 opacity-10 mix-blend-overlay" />
   </div>
 );

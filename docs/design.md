@@ -15,12 +15,12 @@ Two intentionally different views in one app. Tokens live in `src/app/globals.cs
 - **Motion:** CSS transitions/keyframes via Tailwind only; no animation library without asking. Every animation is disabled under `prefers-reduced-motion`. Motion is slow and subtle in the member view, nearly absent in the concierge view.
 - **Optimistic UI:** status badges and action buttons switch immediately on click; on rollback the UI shows the error inline, not a blocking dialog. Rules: [proposal-lifecycle.md](proposal-lifecycle.md).
 
-## Concierge view (`/`)
+## Concierge view (`/planning`, `/planning/[id]`)
 
 **Tone:** efficient, calm, utilitarian. Clarity over decoration. Neutral surfaces, one restrained accent, dense but readable.
 
 - **Fonts:** a single sans family for everything.
-- **Reservation switcher:** at the very top; lists each reservation as member name, destination, dates. Selection is stored in the URL (`?reservation=<id>`); default is the earliest arrival. Switching swaps the trip header, builder, and list; unsaved builder content is discarded after a confirm.
+- **Reservation switcher:** at the very top; lists each reservation as member name, destination, dates. The open proposal determines the selected reservation; with none open, the selection is local state (default: earliest arrival). Choosing a client opens that client's newest proposal, or an empty builder if there is none. Switching swaps the trip header, builder, and list; unsaved builder content is discarded after a confirm.
 - **Trip header:** destination, villa, member name, arrival, departure, nights. Always visible and prominent.
 - **Layout (desktop):** two tabs. Itinerary: trip header, then week planner (left) and proposal panel (right). Proposals: list of all proposals. On mobile the planner and panel stack.
 - **Planner stacking:** each day column is an isolated stacking context, so blocks, flight pills and the now-line (z-10/z-20 inside) never leave it. Sticky layers sit above: time gutter z-20, day headers z-30, corner z-40.
@@ -50,10 +50,10 @@ Two intentionally different views in one app. Tokens live in `src/app/globals.cs
 ## Performance rules
 
 - No `filter: blur` or `backdrop-filter` on large or full-screen layers, and no `backdrop-blur` on repeated surfaces (`Panel` is a semi-opaque fill only). At most a small fixed surface (the action bar) may use a translucent fill; avoid blur there too.
-- Ambient background: static, saturated Solar Flare gradients (plain radial/linear, `--ambient-*` tokens, redefined under `.dark`) plus a tiled data-URI grain (CSS), never a full-viewport SVG `feTurbulence`, blur, or infinitely animated large layers. Color richness comes from gradient alpha, not from filters.
+- Ambient background: static, pale and airy, matching the Claude Design reference. A near-white warm base (`--background`) with a few very soft, wide radial tints (amber, peach, rose) at low alpha (about 0.1 to 0.22 light, 0.03 to 0.1 dark) pushed to the corners so the center stays white. Plain radial gradients from the `--ambient-*` tokens (redefined under `.dark`) plus a faint tiled data-URI grain (CSS), never a full-viewport SVG `feTurbulence`, blur, or infinitely animated large layers. Restraint comes from low alpha and white space, not from filters; do not raise alpha to make it "more vivid". Category and status accents are softened warm hues (tinted blocks at 10% fill), with one deeper warm `--primary` kept for primary actions.
 - Repeated grids (planner hour lines) are one tiled `linear-gradient` background, not one element per row. Derived layout (day grouping, overlap slots) is memoized; per-pointermove state must stay cheap (resize updates one range).
 - Animate `transform` and `opacity` only; for expand/collapse use `grid-template-rows` 0fr to 1fr (about 300ms), never `height`/`top`/`width` and never mount heavy trees on open.
-- Pass cards: the always-visible summary (category, time, title, price) never changes on toggle; only the description is revealed below it (grid rows 0fr to 1fr plus opacity), so text never re-flows or swaps. All cards, including the last, share the same collapsed height and behavior.
+- Pass cards: collapsed height is about 128px (`min-h-32`; taller when a long title wraps) with a 28px stack overlap hidden by bottom padding, so the stack reads as layered cards. Colors are muted warm tints (`--pass-*`, redefined darker under `.dark`) with white `--pass-foreground` text, all at least 5:1 contrast (AA); no saturated fills on the pale background. One `PassCard` component renders them in the member page and in the concierge Preview (`ProposalPresentation` → `ItineraryExplorer` → `DayCards`). The always-visible summary (category, time, title, price) never changes on toggle; only the description is revealed below it (grid rows 0fr to 1fr plus opacity), so text never re-flows or swaps. All cards, including the last, share the same collapsed height and behavior.
 - A whole card is the click target (card root is the toggle, with `role`, `aria-expanded` and Enter/Space); no scroll listeners that set state.
 
 ## Scrollbars and cursors
@@ -77,18 +77,19 @@ Source: Claude Design canvas "Concierge Itinerary Proposal" (boards `Concierge �
 
 **Concierge deviations from the provisional direction above** (the design wins):
 
-- Top bar holds the Itinerary / Proposals tabs and the reservation switcher. The proposals list is its own tab (`?view=proposals`) and shows **all clients**, with the current proposal highlighted, rather than a column beside the builder.
+- Top bar holds the Itinerary / Proposals tabs and the reservation switcher. The proposals list is its own tab (local state, not in the URL) and shows **all clients**, with the current proposal highlighted, rather than a column beside the builder.
 - The builder is a week planner (7 days per page, 7 AM to midnight), not a list of items. The item form (category pills, title, description, date, start and end time, price) is a right sheet. Event height comes from the item's duration, defaulting to a per-category duration until it is set. Clicking a block edits it; double-clicking a day or "Add item" opens the item sheet directly in create mode (no category dialog; category is a pill group in the sheet).
 - Beside the planner sits one proposal panel: note, running total, per-category breakdown, **Preview**, **Save draft**, **Send**.
 - Send success is a dialog showing the server's email record; afterwards the proposal stays open, locked and read only (the builder does not reset). Starting another proposal goes through the Proposals tab.
 - No toasts: save results and errors show inline in the proposal panel.
-- Opening a draft from the list sets `?proposal=<id>` and shows "Editing draft"; a non-draft opens locked in the same planner.
-- With no `proposal` param the planner opens the reservation's newest draft, so the seeded itinerary is visible straight away. `?proposal=new` is the explicit empty builder (used by the palette and the empty state of a reservation without drafts).
+- Opening a proposal from the list navigates to `/planning/<id>` and shows "Editing draft"; a non-draft opens locked in the same planner. `/` redirects to `/planning`, the planner with no proposal open (empty builder, used by "New proposal" and the empty state).
+- The only URL state is the proposal id in the path. Tab, client selection without a proposal, and builder state are local; the dashboard lives in the `/planning` layout so they survive navigation between proposals. Navigation runs in a transition with an optimistic id, so the UI reacts instantly while the route updates.
+- The concierge never sees proposal ids or references: headers and rows show client, destination, dates and status. The send-success dialog shows and copies the client link (`/proposal/<id>`).
 - Unsaved builder content is guarded by one confirm dialog on reservation switch, opening another proposal, or starting a new one.
 
 **Concierge shortcuts:**
 
-- **⌘K / Ctrl+K palette** (also the top-bar button): commands (add item, preview, send, switch view, new proposal, switch client) plus quick add. Typing "sunset cocktails fri 7pm 260" parses category, day, time and price into a live preview and creates the item on Enter. Missing parts default to the first open day, the category's usual start time and $0; a quick-added item gets a neutral description the concierge can edit.
+- **⌘K / Ctrl+K palette** (also the top-bar button): commands (add item, preview, send, switch view, new proposal, switch client) plus quick add. Typing "sunset cocktails fri 7pm 260" parses category, day, time and price into a live preview (an end time or length is understood too: "7pm-9pm", "from 7 to 9pm", "7pm till 9pm", "for 2h", "for 90 min") and creates the item on Enter. Missing parts default to the first open day, the category's usual start time and $0; a quick-added item gets a neutral description the concierge can edit.
 - **Overlaps:** items overlapping in time within a day split that day column side by side (equal widths per overlap cluster, packed by `layoutOverlaps` in `src/lib/proposals/`); layout updates live while resizing.
 - **Resize:** drag a block's top or bottom edge (pointer events) to change start or end; 15-minute snap, 30-minute minimum, clamped to the visible day. Applies to the local draft like any edit (persisted by Save draft); locked proposals show no handles. The sheet's end time edits the same duration.
 - **Block hover:** lift, shadow elevation and ring emphasis; no lift under reduced motion.

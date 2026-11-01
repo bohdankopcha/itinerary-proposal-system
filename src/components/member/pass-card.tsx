@@ -46,18 +46,18 @@ export const PassCard = ({
       onKeyDown={onKeyDown}
       style={{ marginTop: offset, zIndex: layer, animationDelay: `${delay}ms` }}
       className={cn(
-        "text-primary-foreground focus-visible:ring-primary-foreground relative cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-[margin,transform] duration-300 ease-out select-none focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset motion-reduce:transition-none",
+        "text-pass-foreground focus-visible:ring-pass-foreground relative cursor-pointer overflow-hidden rounded-3xl shadow-md transition-[margin,transform] duration-300 ease-out select-none focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset motion-reduce:transition-none",
         PASS_COLORS[item.category],
         collapsing ? "animate-collapse-up" : "animate-pass-in",
-        open && "-translate-y-0.5 shadow-2xl",
+        open && "-translate-y-0.5 shadow-xl",
       )}
     >
       <div
         aria-hidden
-        className="from-primary-foreground/20 to-foreground/25 pointer-events-none absolute inset-0 bg-linear-to-b via-transparent"
+        className="from-pass-foreground/10 to-foreground/20 pointer-events-none absolute inset-0 bg-linear-to-b via-transparent"
       />
-      <div className="relative z-10 flex w-full flex-col gap-1.5 px-5 pt-4 pb-6 text-left">
-        <span className="text-primary-foreground/90 flex items-center justify-between gap-2.5 text-xs font-medium tracking-widest uppercase">
+      <div className="relative z-10 flex min-h-32 w-full flex-col justify-between gap-3 px-5 pt-5 pb-9 text-left">
+        <span className="flex items-center justify-between gap-2.5 text-xs font-medium tracking-widest uppercase">
           <span>{category.label}</span>
           <span className="tabular-nums">
             {formatTime(start)} – {formatTime(start + category.durationMinutes)}
@@ -79,7 +79,7 @@ export const PassCard = ({
         )}
       >
         <div className="min-h-0 overflow-hidden">
-          <p className="border-primary-foreground/35 text-primary-foreground/95 mx-5 border-t border-dashed pt-3 pb-5 text-sm leading-normal">
+          <p className="border-pass-foreground/35 mx-5 border-t border-dashed pt-3 pb-5 text-sm leading-normal">
             {item.description}
           </p>
         </div>

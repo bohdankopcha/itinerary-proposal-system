@@ -33,12 +33,12 @@ A reservation may have several proposals (alternatives or revisions). The dashbo
 - **Flight times are minutes since midnight in resort time** (`arrivalMinutes` on the first day, `departureMinutes` on the last), optional. They only drive the planner markers.
 - **Item duration is optional** (`durationMinutes`, null = the category default). The end time is derived (start + duration) and must stay within the visible day; there is no stored end timestamp.
 - **Item time must fall within the proposal's reservation, arrival to departure inclusive of both days.** Needs the reservation, so it is validated in `src/lib/proposals/`, not only in the zod schema.
-- **IDs are opaque random strings (cuid).** With no auth, the unguessable id in `/proposal/[id]` is the access control for the member link.
+- **IDs are opaque random strings (cuid).** With no auth, the unguessable id in `/proposal/[id]` is the access control for the member link. Seeded rows use fixed readable ids (`proposal_<member>_<place>`, no status in the id, since status changes). The proposal id is the only identifier in any URL (`/planning/[id]`, `/proposal/[id]`); the reservation id never appears in one. Ids are opaque references: a production system would use unguessable ids for every row (newly created ones already are). The confirmation number on the paid screen is a derived display label (`formatConfirmationNumber`), never stored and not an identifier.
 
 ## Seed
 
 `prisma/seed.ts`, idempotent (upserts with fixed ids): the members and reservations from [product.md](product.md), plus one draft proposal per reservation (data in `prisma/seed-proposals.ts`).
 
-Proposals are created only if their id is missing and never overwritten, so `npm run dev` does not undo edits or status changes made in the UI. To get the original data back, run `npm run db:reset`.
+Proposals are created only if their id is missing and never overwritten, so `npm run dev` does not undo edits or status changes made in the UI. To get the original data back, run `npm run db:reset`. Run it also after an id scheme change, since the seed never deletes rows with old ids.
 
 James's proposal is the demo itinerary: 2-4 items on most days, one packed day (6 items) and one deliberately empty day, so the timeline and planner show both extremes. The other two have 2-3 items per day.

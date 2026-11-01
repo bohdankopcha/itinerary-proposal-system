@@ -1,11 +1,7 @@
 import { PROPOSALS_GRID_STYLE } from "@/components/concierge/proposals-grid";
 import { StatusBadge } from "@/components/status-badge";
 import type { ProposalRow as Row } from "@/hooks/use-proposal-rows";
-import {
-  formatMoney,
-  formatProposalRef,
-  formatRange,
-} from "@/lib/proposals/format";
+import { formatMoney, formatRange } from "@/lib/proposals/format";
 import { cn } from "@/lib/utils";
 
 export function ProposalRow({
@@ -34,9 +30,6 @@ export function ProposalRow({
           current && "bg-accent",
         )}
       >
-        <span className="font-mono text-sm">
-          {formatProposalRef(summary.id)}
-        </span>
         <span className="truncate font-semibold">
           {reservation.member.name}
         </span>

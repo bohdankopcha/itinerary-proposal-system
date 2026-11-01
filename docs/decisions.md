@@ -16,7 +16,7 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 
 **Strict, non-idempotent transitions.** Repeating approve returns 409 rather than silently succeeding, so stale clients find out.
 
-**Multiple members via a reservation switcher.** The brief's single "current reservation" endpoint became `GET /api/reservations` returning a list; the selected reservation lives in the URL query (shareable, no extra state or effect). The data model already supported it, so cost was UI and seed only.
+**Multiple members via a reservation switcher.** The brief's single "current reservation" endpoint became `GET /api/reservations` returning a list; the selected reservation is derived from the open proposal, or held in local state when none is open. The data model already supported it, so cost was UI and seed only.
 
 **Edit draft = full replace (`PUT`).** Simplest correct semantics for a list of items: one transaction, no per-item diffing or endpoints. Cost: item ids are unstable, so nothing may reference them.
 
@@ -50,11 +50,15 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 
 **Concierge and member UI follow the Claude Design, Solar Flare theme only.** One theme keeps the token set small; the design's other three themes were left out. Details in [design.md](design.md).
 
-**Quick-add parsing is a pure function with tests.** The palette's text parser lives in `src/lib/proposals/quick-add.ts`. It matches full weekday and month names only (the design's prefix match read "sunset" as Sunday).
+**Quick-add parsing is a pure function with tests.** The palette's text parser lives in `src/lib/proposals/quick-add.ts`. It matches full weekday and month names only (the design's prefix match read "sunset" as Sunday). End time and length are optional: ranges ("7-9pm", "from 7 to 9pm", "7pm till 9pm") and durations ("for 2h", "for 90 min") set `durationMinutes` using the item sheet's rules (30 min minimum, within the day, clamped to 24:00); invalid values leave it null. A bare "to" or "for" ("Trip to Tulum", "table for two") is only consumed when followed by a valid time or duration, and a range needs an am/pm or colon on its numbers so "7-9" stays untouched.
 
 **Member status changes wait for the server before the final animation.** Approve and Pay update the badge optimistically, but the confirmation screen appears only after the PATCH succeeds, so a rollback never leaves the member on a "confirmed" page.
 
 **Builder state is a local working copy, re-seeded only when the reservation or proposal changes.** Edits stay in memory until "Save draft" or "Send" (which saves first); one dirty flag drives the discard confirm, the "Unsaved changes" / "All changes saved" cue, and whether Save draft and Discard changes are active or shown. Discard reverts the working copy to the last saved proposal (it no longer navigates to a new proposal; "New proposal" does that). No effects: the copy resets by comparing a source key during render.
+
+**Routes: `/planning[/<proposalId>]` for the concierge, `/proposal/<id>` for the client; `/` redirects to `/planning`.** The proposal id is the single identifier in URLs; no query params, no reservation id. UI state (tab, client without a proposal, builder) is local, so there is nothing to keep in sync with the URL. The dashboard sits in the `/planning` layout (pages render nothing) so that changing the id does not remount it and drop local state. Client switches and opens navigate inside a transition with an optimistic id, so the UI responds before the route settles. Trade-off: a reload on `/planning` forgets which client was chosen for an empty builder.
+
+**The concierge sees no ids.** Earlier a hashed "P-####" reference was shown; it was a third, fake identifier. Rows and headers use client, destination, dates and status instead. The concierge reaches the client view through the client link in the send-success dialog.
 
 ## Assumptions
 
@@ -73,3 +77,5 @@ Short "what and why" records. Source for the README ("assumptions", "what I'd im
 - Item catalog with default prices; multi-currency.
 - Pagination for the proposals list.
 - E2E tests (Playwright) for the full loop; currently unit and API-level tests.
+
+**Vercel deploy with a build-time SQLite snapshot.** Vercel functions have a read-only filesystem, so the build runs `db:prepare` (migrate + seed) into `dev.db`, which is traced into the functions and copied to `/tmp` on cold start (`src/lib/db/client.ts`). Trade-off: writes are per-instance and ephemeral, so data resets on cold starts; acceptable for a demo, a hosted database would be needed for real use.

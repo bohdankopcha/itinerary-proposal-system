@@ -57,6 +57,7 @@
   --color-category-excursions: var(--category-excursions);
   --color-category-transport: var(--category-transport);
   --color-category-experiences: var(--category-experiences);
+  --color-pass-foreground: var(--pass-foreground);
   --color-pass-dining: var(--pass-dining);
   --color-pass-activities: var(--pass-activities);
   --color-pass-wellness: var(--pass-wellness);
@@ -212,9 +213,9 @@
 }
 
 :root {
-  --background: #fff5ee;
+  --background: #fffaf6;
   --foreground: #2a0f08;
-  --card: rgb(255 255 255 / 0.58);
+  --card: rgb(255 255 255 / 0.72);
   --card-foreground: #2a0f08;
   --popover: rgb(255 250 246 / 0.98);
   --popover-foreground: #2a0f08;
@@ -224,7 +225,7 @@
   --secondary-foreground: #2a0f08;
   --muted: rgb(90 25 10 / 0.06);
   --muted-foreground: #6e3524;
-  --accent: rgb(255 90 31 / 0.14);
+  --accent: rgb(255 90 31 / 0.08);
   --accent-foreground: #2a0f08;
   --destructive: oklch(0.577 0.245 27.325);
   --border: rgb(90 25 10 / 0.09);
@@ -246,47 +247,51 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   --field: rgb(255 255 255 / 0.75);
-  --panel-border: rgb(255 255 255 / 0.85);
+  --panel-border: rgb(255 255 255 / 0.9);
   --panel-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 30px 60px -36px rgb(160 30 10 / 0.45);
-  --scrim: rgb(60 10 0 / 0.22);
+    0 30px 60px -40px rgb(160 30 10 / 0.18);
+  --scrim: rgb(60 10 0 / 0.16);
   --scrollbar-thumb: rgb(90 25 10 / 0.22);
   --scrollbar-thumb-hover: rgb(90 25 10 / 0.4);
 
-  --status-sent: #ff2e63;
-  --status-approved: #ff8a00;
+  --status-sent: #e5587a;
+  --status-approved: #e8963a;
 
-  --category-dining: #ff2e63;
-  --category-activities: #ff5a1f;
-  --category-wellness: #ffb020;
-  --category-excursions: #c2185b;
-  --category-transport: #ff8a00;
-  --category-experiences: #e0400f;
+  --category-dining: #e5587a;
+  --category-activities: #e8754a;
+  --category-wellness: #e6b04a;
+  --category-excursions: #b8507a;
+  --category-transport: #e8963a;
+  --category-experiences: #d2603f;
 
-  --pass-dining: #b3123f;
-  --pass-activities: #b8320b;
-  --pass-wellness: #9a4a06;
-  --pass-excursions: #9c1f4a;
-  --pass-transport: #a33a0a;
-  --pass-experiences: #8f2a12;
-  --trip-from: #a80f3c;
-  --trip-via: #c2300c;
-  --trip-to: #b85a06;
+  --pass-foreground: #ffffff;
+  --pass-dining: #a24d5e;
+  --pass-activities: #a2594a;
+  --pass-wellness: #8a653a;
+  --pass-excursions: #8f5068;
+  --pass-transport: #985f45;
+  --pass-experiences: #895a50;
+  --trip-from: #a8374f;
+  --trip-via: #b8502f;
+  --trip-to: #b0662a;
 
   --ambient-warm:
-    radial-gradient(60% 52% at 6% 4%, rgb(255 170 20 / 0.85), transparent 75%),
-    radial-gradient(58% 50% at 96% 96%, rgb(255 100 0 / 0.7), transparent 75%),
-    radial-gradient(50% 44% at 4% 94%, rgb(255 56 20 / 0.55), transparent 75%),
-    linear-gradient(160deg, #ffdcc0 0%, #ffc8b0 55%, #ffb698 100%);
+    radial-gradient(70% 60% at 4% 2%, rgb(255 176 32 / 0.22), transparent 72%),
+    radial-gradient(
+      70% 60% at 98% 98%,
+      rgb(255 150 60 / 0.18),
+      transparent 72%
+    ),
+    radial-gradient(60% 52% at 2% 96%, rgb(255 110 70 / 0.1), transparent 72%);
   --ambient-rose:
-    radial-gradient(52% 46% at 94% 6%, rgb(255 30 90 / 0.65), transparent 75%),
-    radial-gradient(42% 38% at 50% 50%, rgb(255 190 60 / 0.28), transparent 72%);
+    radial-gradient(64% 56% at 98% 2%, rgb(255 80 120 / 0.14), transparent 72%),
+    radial-gradient(50% 44% at 50% 50%, rgb(255 190 90 / 0.05), transparent 72%);
   --ambient-flutes: linear-gradient(
     to right,
-    rgb(255 255 255 / 0.08),
-    rgb(255 255 255 / 0.02) 50%,
-    rgb(255 255 255 / 0.08)
+    rgb(255 255 255 / 0.04),
+    rgb(255 255 255 / 0.01) 50%,
+    rgb(255 255 255 / 0.04)
   );
 }
 
@@ -322,21 +327,30 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --pass-dining: #8a3a4b;
+  --pass-activities: #8d4630;
+  --pass-wellness: #7a5224;
+  --pass-excursions: #7d3a50;
+  --pass-transport: #84462c;
+  --pass-experiences: #774034;
   --scrollbar-thumb: oklch(1 0 0 / 22%);
   --scrollbar-thumb-hover: oklch(1 0 0 / 40%);
   --ambient-warm:
-    radial-gradient(60% 52% at 6% 4%, rgb(255 150 20 / 0.5), transparent 72%),
-    radial-gradient(58% 50% at 96% 96%, rgb(255 90 0 / 0.42), transparent 72%),
-    radial-gradient(50% 44% at 4% 94%, rgb(230 40 10 / 0.34), transparent 72%),
-    linear-gradient(160deg, #2a0f08 0%, #1f0a0a 55%, #170707 100%);
+    radial-gradient(70% 60% at 4% 2%, rgb(255 160 40 / 0.1), transparent 72%),
+    radial-gradient(
+      70% 60% at 98% 98%,
+      rgb(255 120 50 / 0.08),
+      transparent 72%
+    ),
+    radial-gradient(60% 52% at 2% 96%, rgb(220 70 40 / 0.06), transparent 72%);
   --ambient-rose:
-    radial-gradient(52% 46% at 94% 6%, rgb(255 30 90 / 0.42), transparent 72%),
-    radial-gradient(42% 38% at 50% 50%, rgb(255 150 40 / 0.14), transparent 72%);
+    radial-gradient(64% 56% at 98% 2%, rgb(255 70 110 / 0.08), transparent 72%),
+    radial-gradient(50% 44% at 50% 50%, rgb(255 160 60 / 0.03), transparent 72%);
   --ambient-flutes: linear-gradient(
     to right,
-    rgb(255 255 255 / 0.03),
+    rgb(255 255 255 / 0.015),
     rgb(255 255 255 / 0) 50%,
-    rgb(255 255 255 / 0.03)
+    rgb(255 255 255 / 0.015)
   );
 }
 

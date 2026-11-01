@@ -92,6 +92,12 @@ export function formatDateWithYear(date: string) {
   return `${weekday}, ${month} ${day}, ${year}`;
 }
 
+const referenceCode = (id: string) => {
+  let hash = 2166136261;
+  for (const char of id) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+  return String(1000 + ((hash >>> 0) % 9000));
+};
+
 export function formatConfirmationNumber(proposal: {
   id: string;
   reservation: { destination: string; arrivalDate: string };
@@ -104,7 +110,7 @@ export function formatConfirmationNumber(proposal: {
     .slice(0, 3)
     .toUpperCase();
   const [, month, day] = proposal.reservation.arrivalDate.split("-");
-  return `${initials}-${month}${day}-${proposal.id.slice(-4).toUpperCase()}`;
+  return `${initials}-${month}${day}-${referenceCode(proposal.id)}`;
 }
 
 export function formatRange(arrivalDate: string, departureDate: string) {
@@ -126,6 +132,14 @@ export function formatTime(minutes: number) {
   return `${hours % 12 || 12}:${rest} ${hours >= 12 && hours < 24 ? "PM" : "AM"}`;
 }
 
+export const formatTimeRange = (
+  startMinutes: number,
+  durationMinutes: number | null,
+) =>
+  durationMinutes === null
+    ? formatTime(startMinutes)
+    : `${formatTime(startMinutes)} – ${formatTime(startMinutes + durationMinutes)}`;
+
 export function formatHourLabel(hour: number) {
   return `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`;
 }
@@ -135,9 +149,6 @@ export function formatStamp(iso: string) {
   const time = `${String(value.getUTCHours()).padStart(2, "0")}:${String(value.getUTCMinutes()).padStart(2, "0")}`;
   return `${MONTHS[value.getUTCMonth()]} ${value.getUTCDate()}, ${time}`;
 }
-
-export const formatProposalRef = (id: string) =>
-  `P-${id.slice(-6).toUpperCase()}`;
 
 export const STATUS_LABELS: Record<ProposalStatus, string> = {
   draft: "Draft",

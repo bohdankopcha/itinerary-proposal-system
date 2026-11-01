@@ -640,21 +640,21 @@ const danielItems: SeedItem[] = [
 
 export const proposals: SeedProposal[] = [
   {
-    id: "proposal_punta_mita_draft",
+    id: "proposal_james_punta_mita",
     reservationId: "reservation_punta_mita",
     notes:
       "James, we shaped this week around the Pacific: slow mornings, one full day on the water, a deliberate rest day on Thursday and a proper farewell. Happy to swap or soften anything.",
     items: jamesItems,
   },
   {
-    id: "proposal_cabo_azul_draft",
+    id: "proposal_amelia_cabo_azul",
     reservationId: "reservation_cabo_azul",
     notes:
       "Amelia, a week of sea, desert and long dinners in Cabo. Tell us what to trim or add.",
     items: ameliaItems,
   },
   {
-    id: "proposal_maya_sol_draft",
+    id: "proposal_daniel_maya_sol",
     reservationId: "reservation_maya_sol",
     notes:
       "Daniel, cenotes, ruins and the Caribbean at an easy pace. Everything can be adjusted.",

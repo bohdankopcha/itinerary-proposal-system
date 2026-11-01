@@ -10,7 +10,6 @@ import type { DraftItem } from "@/lib/proposals/draft";
 import {
   STATUS_LABELS,
   formatMoney,
-  formatProposalRef,
   formatStamp,
 } from "@/lib/proposals/format";
 import { plannedDayCount } from "@/lib/proposals/itinerary";
@@ -81,7 +80,10 @@ export function ProposalPanel({
           <p className="text-muted-foreground text-sm">
             {proposalId === null
               ? "New draft"
-              : `${locked ? "Viewing" : "Editing draft"} ${formatProposalRef(proposalId)}`}
+              : locked
+                ? "Viewing proposal"
+                : "Editing draft"}
+            {` for ${reservation.member.name}, ${reservation.destination.split(",")[0]}`}
           </p>
         </div>
         <StatusBadge status={status} />

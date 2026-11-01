@@ -33,7 +33,7 @@ export function CommandPalette({ palette }: { palette: Palette }) {
             aria-label="Command or new item"
             autoFocus
             value={palette.query}
-            placeholder="surf lesson day 2 10am 220"
+            placeholder="surf lesson day 2 10am-12pm 220"
             onChange={(event) => palette.setQuery(event.target.value)}
             onKeyDown={palette.onInputKeyDown}
             className="h-13 border-0 bg-transparent px-0 text-lg shadow-none focus-visible:ring-0"

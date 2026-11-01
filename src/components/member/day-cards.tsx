@@ -7,8 +7,8 @@ import type { ItineraryDay } from "@/lib/proposals/itinerary";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const STACK_OVERLAP = -18;
-const OPEN_GAP = 14;
+const STACK_OVERLAP = -28;
+const OPEN_GAP = 12;
 
 export function daySummary(day: ItineraryDay<ExplorerItem>) {
   const count = day.items.length;
@@ -101,11 +101,6 @@ export function DayCards({
           />
         ))}
       </div>
-      <p className="text-muted-foreground text-center text-sm">
-        {items.length > 1
-          ? "Tap a card for details · swipe to change day"
-          : "Swipe or use the arrows to change day"}
-      </p>
     </>
   );
 }

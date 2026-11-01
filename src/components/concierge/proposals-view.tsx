@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProposalRows } from "@/hooks/use-proposal-rows";
 
 const COLUMNS = [
-  "Proposal",
   "Client",
   "Stay",
   "Dates",
@@ -28,7 +27,7 @@ export function ProposalsView({
 }: {
   currentProposalId: string | null;
   clientName: string;
-  onOpen: (reservationId: string, proposalId: string) => void;
+  onOpen: (proposalId: string) => void;
   onNew: () => void;
 }) {
   const { rows, counts, isPending, isError, refetch } = useProposalRows();
@@ -98,7 +97,7 @@ export function ProposalsView({
                   row={row}
                   index={index}
                   current={row.summary.id === currentProposalId}
-                  onOpen={() => onOpen(row.reservation.id, row.summary.id)}
+                  onOpen={() => onOpen(row.summary.id)}
                 />
               ))}
             </ul>

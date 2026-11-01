@@ -1,6 +1,6 @@
 import { ReservationSelect } from "@/components/concierge/reservation-select";
 import { Button } from "@/components/ui/button";
-import type { ConciergeView } from "@/hooks/use-concierge-params";
+import type { ConciergeView } from "@/hooks/concierge-view";
 import type { Reservation } from "@/lib/schemas/reservation";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";

@@ -1,19 +1,5 @@
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import { ConciergeDashboard } from "@/components/concierge/concierge-dashboard";
-import { ConciergeShell } from "@/components/concierge/concierge-shell";
-import { DashboardSkeleton } from "@/components/concierge/dashboard-skeleton";
+const Home = () => redirect("/planning");
 
-export default function Home() {
-  return (
-    <Suspense
-      fallback={
-        <ConciergeShell>
-          <DashboardSkeleton />
-        </ConciergeShell>
-      }
-    >
-      <ConciergeDashboard />
-    </Suspense>
-  );
-}
+export default Home;

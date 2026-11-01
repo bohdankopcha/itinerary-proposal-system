@@ -190,6 +190,7 @@ export function useItemEditor({
       description: `${title}, arranged by your concierge.`,
       scheduledAt: resolved.scheduledAt,
       priceCents: resolved.priceCents,
+      durationMinutes: resolved.durationMinutes,
     });
     flash(key);
     onItemPlaced(

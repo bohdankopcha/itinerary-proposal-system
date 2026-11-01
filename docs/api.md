@@ -24,6 +24,17 @@ Notes:
 - Check order on `PUT`: unknown id (404), then `NOT_EDITABLE`, then item validation. A body that fails the zod schema is `400` before any of these.
 - `GET /api/reservations` takes no request data, so under Cache Components it would be prerendered at build time; it calls `connection()` to stay request-time. Any future `GET` handler without request data needs the same.
 
+## Pages
+
+| Path             | View                                                    |
+| ---------------- | ------------------------------------------------------- |
+| `/`              | Redirects to `/planning`                                |
+| `/planning`      | Concierge planner with no proposal open (empty builder) |
+| `/planning/[id]` | Concierge planner with proposal `id` open               |
+| `/proposal/[id]` | Client view of proposal `id`                            |
+
+The proposal id is the only identifier in URLs; ids are opaque references (see [data-model.md](data-model.md)).
+
 ## Conventions
 
 - **JSON only.** Dates are ISO 8601 strings; money is integer cents (`...Cents`); ids are opaque strings.

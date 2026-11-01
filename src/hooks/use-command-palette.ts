@@ -6,7 +6,7 @@ import {
   STATUS_LABELS,
   formatDayShort,
   formatMoney,
-  formatTime,
+  formatTimeRange,
 } from "@/lib/proposals/format";
 import {
   parseQuickAdd,
@@ -16,7 +16,7 @@ import {
 import type { ProposalStatus } from "@/lib/schemas/proposal";
 import type { Reservation } from "@/lib/schemas/reservation";
 
-import type { ConciergeView } from "./use-concierge-params";
+import type { ConciergeView } from "./concierge-view";
 
 export type PaletteOption = {
   id: string;
@@ -178,7 +178,10 @@ export function useCommandPalette({
               : [
                   CATEGORIES[parsed.category].label,
                   formatDayShort(resolved.date),
-                  formatTime(resolved.startMinutes),
+                  formatTimeRange(
+                    resolved.startMinutes,
+                    resolved.durationMinutes,
+                  ),
                   formatMoney(resolved.priceCents),
                 ].join(" · "),
             disabled: locked,
@@ -227,8 +230,14 @@ export function useCommandPalette({
           },
           {
             label: "Time",
-            value: formatTime(resolved.startMinutes),
-            tone: parsed.startMinutes !== null ? "set" : "auto",
+            value: formatTimeRange(
+              resolved.startMinutes,
+              resolved.durationMinutes,
+            ),
+            tone:
+              parsed.startMinutes !== null || resolved.durationMinutes !== null
+                ? "set"
+                : "auto",
           },
           {
             label: "Price",

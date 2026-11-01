@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 
 import { toDraftItems } from "@/lib/proposals/draft";
 import type { Reservation } from "@/lib/schemas/reservation";
 
+import type { ConciergeView } from "./concierge-view";
 import { useCommandPalette } from "./use-command-palette";
-import { useConciergeParams, type ConciergeView } from "./use-concierge-params";
 import { useDraftBuilder } from "./use-draft-builder";
 import { useItemEditor } from "./use-item-editor";
 import { usePlannerDrag } from "./use-planner-drag";
@@ -14,35 +15,40 @@ import { useProposalActions } from "./use-proposal-actions";
 import { useProposalList } from "./use-proposal-list";
 import { useReservations } from "./use-reservations";
 
-export function useConciergeDashboard() {
-  const params = useConciergeParams();
+export const useConciergeDashboard = () => {
+  const router = useRouter();
+  const { id: routeProposalId = null } = useParams<{ id?: string }>();
+  const [, startTransition] = useTransition();
+  const [proposalId, setOptimisticProposalId] = useOptimistic(routeProposalId);
+  const [view, setView] = useState<ConciergeView>("itinerary");
+  const [draftReservationId, setDraftReservationId] = useState<string | null>(
+    null,
+  );
   const reservationsQuery = useReservations();
   const proposalListQuery = useProposalList();
   const proposalCount = proposalListQuery.data?.length ?? 0;
-
   const reservations = reservationsQuery.data ?? NO_RESERVATIONS;
-  const reservation =
-    reservations.find((item) => item.id === params.reservationParam) ??
-    reservations[0];
 
-  const defaultDraft = useMemo(
-    () =>
-      proposalListQuery.data
-        ?.filter(
-          (item) =>
-            item.reservationId === reservation?.id && item.status === "draft",
-        )
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0],
-    [proposalListQuery.data, reservation?.id],
-  );
-  const resolvingDefault =
-    params.proposalParam === null && proposalListQuery.isPending;
-  const proposalId =
-    params.proposalParam === NEW_PROPOSAL
-      ? null
-      : (params.proposalParam ?? defaultDraft?.id ?? null);
+  const proposalQuery = useProposal(proposalId);
 
-  const proposalQuery = useProposal(reservation ? proposalId : null);
+  const openReservationId =
+    proposalId === null
+      ? draftReservationId
+      : (proposalListQuery.data?.find((item) => item.id === proposalId)
+          ?.reservationId ?? proposalQuery.data?.reservation.id);
+  const resolvingReservation =
+    proposalId !== null && !openReservationId && !proposalQuery.isError;
+  const reservation = resolvingReservation
+    ? undefined
+    : (reservations.find((item) => item.id === openReservationId) ??
+      reservations[0]);
+
+  const navigate = (id: string | null, mode: "push" | "replace" = "push") =>
+    startTransition(() => {
+      setOptimisticProposalId(id);
+      router[mode](id ? `/planning/${id}` : "/planning");
+    });
+
   const proposal = proposalQuery.data;
 
   const builder = useDraftBuilder({
@@ -71,7 +77,7 @@ export function useConciergeDashboard() {
     proposalId,
     builder,
     onSaved: (id) => {
-      if (id !== proposalId) params.update({ proposal: id });
+      if (id !== proposalId) navigate(id, "replace");
     },
   });
 
@@ -101,16 +107,30 @@ export function useConciergeDashboard() {
     onResized: editor.flash,
   });
 
-  const setView = (view: ConciergeView) =>
-    params.update({ view: view === "proposals" ? "proposals" : null });
+  const newestProposalId = (reservationId: string) =>
+    proposalListQuery.data
+      ?.filter((item) => item.reservationId === reservationId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]?.id;
   const selectReservation = (id: string) => {
     if (id === reservation?.id) return;
-    guarded(() => params.update({ reservation: id, proposal: null }));
+    guarded(() => {
+      const newest = newestProposalId(id);
+      if (newest) return navigate(newest);
+      setDraftReservationId(id);
+      if (proposalId !== null) navigate(null);
+    });
   };
   const startNewProposal = () =>
     guarded(() => {
       if (proposalId === null) builder.reset();
-      params.update({ proposal: NEW_PROPOSAL, view: null });
+      setDraftReservationId(reservation?.id ?? null);
+      setView("itinerary");
+      if (proposalId !== null) navigate(null);
+    });
+  const openProposal = (id: string) =>
+    guarded(() => {
+      setView("itinerary");
+      if (id !== proposalId) navigate(id);
     });
   const requestDiscard = () => {
     if (!builder.dirty) return;
@@ -126,7 +146,7 @@ export function useConciergeDashboard() {
     reservations,
     items,
     status,
-    view: params.view,
+    view,
     canSend,
     onOpen: editor.close,
     onAddItem: () => editor.openNew(),
@@ -143,11 +163,11 @@ export function useConciergeDashboard() {
     reservations,
     reservation,
     proposalCount,
-    view: params.view,
+    view,
     proposalId,
     proposalQuery,
-    proposalLoading:
-      resolvingDefault || (proposalId !== null && proposalQuery.isPending),
+    resolvingReservation,
+    proposalLoading: proposalId !== null && proposalQuery.isPending,
     proposalFailed: proposalId !== null && proposalQuery.isError,
     proposal,
     status,
@@ -169,10 +189,7 @@ export function useConciergeDashboard() {
     selectReservation,
     startNewProposal,
     requestDiscard,
-    openProposal: (reservationId: string, id: string) =>
-      guarded(() =>
-        params.update({ reservation: reservationId, proposal: id, view: null }),
-      ),
+    openProposal,
     discard: {
       open: pendingNavigation !== null,
       confirm: () => {
@@ -182,9 +199,7 @@ export function useConciergeDashboard() {
       cancel: () => setPendingNavigation(null),
     },
   };
-}
-
-const NEW_PROPOSAL = "new";
+};
 
 const NO_RESERVATIONS: Reservation[] = [];
 

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -6,17 +7,19 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useClientLink } from "@/hooks/use-client-link";
 import { formatStamp } from "@/lib/proposals/format";
 import type { SendProposalResult } from "@/lib/schemas/proposal";
 
-export function SentDialog({
+export const SentDialog = ({
   result,
   onClose,
 }: {
   result: SendProposalResult | null;
   onClose: () => void;
-}) {
+}) => {
   const member = result?.reservation.member;
+  const clientLink = useClientLink(result?.id ?? null);
 
   return (
     <Dialog open={!!result} onOpenChange={(open) => !open && onClose()}>
@@ -68,6 +71,20 @@ export function SentDialog({
                 {result.sentEmail.bodyPreview}
               </div>
             </dl>
+            <div className="flex flex-col gap-2">
+              <span className="text-muted-foreground text-sm">Client link</span>
+              <div className="flex gap-2">
+                <Input
+                  readOnly
+                  aria-label="Client link"
+                  value={clientLink.url}
+                  onFocus={(event) => event.target.select()}
+                />
+                <Button variant="outline" onClick={clientLink.copy}>
+                  {clientLink.copied ? "Copied" : "Copy"}
+                </Button>
+              </div>
+            </div>
             <DialogFooter>
               <Button onClick={onClose}>Done</Button>
             </DialogFooter>
@@ -76,4 +93,4 @@ export function SentDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

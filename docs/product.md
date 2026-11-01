@@ -42,7 +42,7 @@ The concierge is a professional who moves fast: clarity over decoration. The mem
 
 ## Capabilities (all required)
 
-1. **Reservation switcher.** The dashboard serves multiple members. The selected reservation drives the trip header, the builder, and the proposals list. Selection is kept in the URL.
+1. **Reservation switcher.** The dashboard serves multiple members. The selected reservation drives the trip header, the builder, and the proposals list. The open proposal (in the path) determines it; otherwise it is local state.
 2. **Trip header.** Destination, villa, arrival, departure, and member name, prominent at the top.
 3. **Build.** Add line items by picking a category, then filling title, description, date/time, price. Optional note.
 4. **Edit draft.** A draft can be reopened in the builder, changed, and re-saved. Sent proposals are read-only.
