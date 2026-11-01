@@ -72,6 +72,11 @@ export function formatDayShort(date: string) {
   return `${weekday} ${day}`;
 }
 
+export function formatDayMonth(date: string) {
+  const { weekday, day, month } = dateParts(date);
+  return `${weekday} ${day} ${month}`;
+}
+
 export function formatDayLong(date: string) {
   const { weekdayLong, month, day } = dateParts(date);
   return `${weekdayLong}, ${month} ${day}`;

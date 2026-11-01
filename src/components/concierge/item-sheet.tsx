@@ -43,7 +43,7 @@ export function ItemSheet({
 
   return (
     <Sheet open={!!sheet} onOpenChange={(open) => !open && editor.close()}>
-      <SheetContent className="w-full backdrop-blur-xl sm:max-w-md">
+      <SheetContent className="w-full sm:max-w-md">
         {sheet && form && (
           <form
             className="flex min-h-0 flex-1 flex-col"

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { toDraftItems } from "@/lib/proposals/draft";
+import type { Reservation } from "@/lib/schemas/reservation";
 
 import { useCommandPalette } from "./use-command-palette";
 import { useConciergeParams, type ConciergeView } from "./use-concierge-params";
@@ -19,17 +20,21 @@ export function useConciergeDashboard() {
   const proposalListQuery = useProposalList();
   const proposalCount = proposalListQuery.data?.length ?? 0;
 
-  const reservations = reservationsQuery.data ?? [];
+  const reservations = reservationsQuery.data ?? NO_RESERVATIONS;
   const reservation =
     reservations.find((item) => item.id === params.reservationParam) ??
     reservations[0];
 
-  const defaultDraft = proposalListQuery.data
-    ?.filter(
-      (item) =>
-        item.reservationId === reservation?.id && item.status === "draft",
-    )
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+  const defaultDraft = useMemo(
+    () =>
+      proposalListQuery.data
+        ?.filter(
+          (item) =>
+            item.reservationId === reservation?.id && item.status === "draft",
+        )
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0],
+    [proposalListQuery.data, reservation?.id],
+  );
   const resolvingDefault =
     params.proposalParam === null && proposalListQuery.isPending;
   const proposalId =
@@ -48,8 +53,11 @@ export function useConciergeDashboard() {
 
   const status = proposal?.status ?? "draft";
   const locked = status !== "draft";
-  const items =
-    locked && proposal ? toDraftItems(proposal.items) : builder.items;
+  const lockedItems = useMemo(
+    () => (locked && proposal ? toDraftItems(proposal.items) : null),
+    [locked, proposal],
+  );
+  const items = lockedItems ?? builder.items;
   const notes = locked && proposal ? (proposal.notes ?? "") : builder.notes;
 
   const [page, setPage] = useState(0);
@@ -177,6 +185,8 @@ export function useConciergeDashboard() {
 }
 
 const NEW_PROPOSAL = "new";
+
+const NO_RESERVATIONS: Reservation[] = [];
 
 const EMPTY_RESERVATION = {
   id: "",

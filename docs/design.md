@@ -44,7 +44,17 @@ Two intentionally different views in one app. Tokens live in `src/app/globals.cs
 - **Not available:** `draft` or unknown id shows a quiet "not available yet" message that reveals nothing about the proposal.
 - **Mobile:** the primary target. Single column up to 36rem, sticky bottom bar with total and the one primary action.
 - **Preview parity:** the concierge Preview renders the same header, note and itinerary components as a `sent` proposal (without the bar), so it matches what the member sees.
+- **Header stats:** arrive, depart and nights sit in an equal-width 3-column grid (also at 375px), each a small uppercase label over a single-line value. Dates use one format, `Thu 12 Mar` (`formatDayMonth`, same parts as the planner day headers); nights read `7 nights`.
 - **Generated, not stored:** the confirmation number is derived from destination initials, arrival date and the proposal id (see `formatConfirmationNumber`). The concierge is shown as "Your concierge" because the model has no concierge name. The postcard map is decorative art; the villa name is the only per-stay label (no coordinates exist).
+
+## Performance rules
+
+- No `filter: blur` or `backdrop-filter` on large or full-screen layers, and no `backdrop-blur` on repeated surfaces (`Panel` is a semi-opaque fill only). At most a small fixed surface (the action bar) may use a translucent fill; avoid blur there too.
+- Ambient background: static, saturated Solar Flare gradients (plain radial/linear, `--ambient-*` tokens, redefined under `.dark`) plus a tiled data-URI grain (CSS), never a full-viewport SVG `feTurbulence`, blur, or infinitely animated large layers. Color richness comes from gradient alpha, not from filters.
+- Repeated grids (planner hour lines) are one tiled `linear-gradient` background, not one element per row. Derived layout (day grouping, overlap slots) is memoized; per-pointermove state must stay cheap (resize updates one range).
+- Animate `transform` and `opacity` only; for expand/collapse use `grid-template-rows` 0fr to 1fr (about 300ms), never `height`/`top`/`width` and never mount heavy trees on open.
+- Pass cards: the always-visible summary (category, time, title, price) never changes on toggle; only the description is revealed below it (grid rows 0fr to 1fr plus opacity), so text never re-flows or swaps. All cards, including the last, share the same collapsed height and behavior.
+- A whole card is the click target (card root is the toggle, with `role`, `aria-expanded` and Enter/Space); no scroll listeners that set state.
 
 ## Scrollbars and cursors
 
@@ -63,7 +73,7 @@ Reuse the existing shadcn semantic tokens (`background`, `foreground`, `primary`
 
 Source: Claude Design canvas "Concierge Itinerary Proposal" (boards `Concierge · Command` and `Client · Wallet`), both implemented.
 
-**Concierge theme: Solar Flare only.** The design ships four themes; we use just this one, no theme switcher. The palette is mapped onto the shadcn semantic tokens in `globals.css` (cream `background`, deep red-brown `foreground`, red-orange `primary`, translucent glass `card`, near-opaque `popover` for dialogs and sheets), plus `field`, `panel-border`, `status-sent|approved`, and one `category-*` color per category. Ambient orbs, glass flutes and grain sit behind the concierge shell only; the drift animation is `motion-safe`.
+**Concierge theme: Solar Flare only.** The design ships four themes; we use just this one, no theme switcher. The palette is mapped onto the shadcn semantic tokens in `globals.css` (cream `background`, deep red-brown `foreground`, red-orange `primary`, translucent glass `card`, near-opaque `popover` for dialogs and sheets), plus `field`, `panel-border`, `status-sent|approved`, and one `category-*` color per category. Ambient orbs, glass flutes and grain are static layers behind both shells (plain radial gradients and a tiny tiled grain image, no animation).
 
 **Concierge deviations from the provisional direction above** (the design wins):
 

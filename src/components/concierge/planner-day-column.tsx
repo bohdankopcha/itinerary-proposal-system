@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { PlannerBlock } from "@/components/concierge/planner-block";
 import { Button } from "@/components/ui/button";
 import { Plane } from "lucide-react";
@@ -5,7 +7,7 @@ import { Plane } from "lucide-react";
 import type { PlannerDrag } from "@/hooks/use-planner-drag";
 import type { PlannerResize } from "@/hooks/use-planner-resize";
 import {
-  CALENDAR_HOURS,
+  CALENDAR_HEIGHT,
   MIN_VISUAL_MINUTES,
   blockLayout,
   flightTop,
@@ -44,16 +46,23 @@ export const PlannerDayColumn = ({
     onAdd(date, minutesAtOffset(event.clientY - top));
   };
 
-  const slots = layoutOverlaps(
-    items.map((item) => {
-      const { startMinutes, durationMinutes } = resize.rangeFor(item);
-      return {
-        key: item.key,
-        startMinutes,
-        endMinutes:
-          startMinutes + Math.max(durationMinutes, MIN_VISUAL_MINUTES),
-      };
-    }),
+  const { rangeFor } = resize;
+  const slotByKey = useMemo(
+    () =>
+      new Map(
+        layoutOverlaps(
+          items.map((item) => {
+            const { startMinutes, durationMinutes } = rangeFor(item);
+            return {
+              key: item.key,
+              startMinutes,
+              endMinutes:
+                startMinutes + Math.max(durationMinutes, MIN_VISUAL_MINUTES),
+            };
+          }),
+        ).map((slot) => [slot.key, slot]),
+      ),
+    [items, rangeFor],
   );
 
   const ghost = drag.over?.date === date ? drag.over : null;
@@ -63,14 +72,15 @@ export const PlannerDayColumn = ({
 
   return (
     <div
-      className={cn("relative isolate border-l", ghost && "bg-accent")}
+      style={{ height: CALENDAR_HEIGHT }}
+      className={cn(
+        "bg-hour-grid relative isolate border-l",
+        ghost && "bg-accent",
+      )}
       onDoubleClick={handleDoubleClick}
       onDragOver={(event) => drag.overDay(date, event)}
       onDrop={(event) => drag.dropOnDay(date, event)}
     >
-      {CALENDAR_HOURS.map((hour) => (
-        <div key={hour} aria-hidden className="h-12 border-b" />
-      ))}
       {items.length === 0 && !ghost && (
         <div className="absolute inset-x-2 top-52 flex flex-col items-center gap-2.5 text-center">
           <span className="text-sm font-semibold">Open day</span>
@@ -98,7 +108,7 @@ export const PlannerDayColumn = ({
         <PlannerBlock
           key={item.key}
           item={item}
-          slot={slots.find((slot) => slot.key === item.key) ?? FULL_WIDTH}
+          slot={slotByKey.get(item.key) ?? FULL_WIDTH}
           highlighted={flashKey === item.key}
           locked={locked}
           drag={drag}

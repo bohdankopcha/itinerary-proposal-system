@@ -7,7 +7,7 @@ import type { ItineraryDay } from "@/lib/proposals/itinerary";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const STACK_OVERLAP = -112;
+const STACK_OVERLAP = -18;
 const OPEN_GAP = 14;
 
 export function daySummary(day: ItineraryDay<ExplorerItem>) {

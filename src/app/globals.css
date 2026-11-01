@@ -209,18 +209,6 @@
       transform: scale(2.8);
     }
   }
-  --animate-ambient-drift: ambient-drift 38s ease-in-out infinite alternate;
-  --animate-ambient-drift-slow: ambient-drift 52s ease-in-out infinite
-    alternate-reverse;
-
-  @keyframes ambient-drift {
-    from {
-      transform: translate3d(0, 0, 0);
-    }
-    to {
-      transform: translate3d(-3%, 2%, 0) scale(1.05);
-    }
-  }
 }
 
 :root {
@@ -287,17 +275,18 @@
   --trip-to: #b85a06;
 
   --ambient-warm:
-    radial-gradient(38% 34% at 10% 6%, rgb(255 176 32 / 0.26), transparent 70%),
-    radial-gradient(44% 40% at 90% 92%, rgb(255 138 0 / 0.2), transparent 70%),
-    radial-gradient(36% 32% at 8% 88%, rgb(255 90 31 / 0.12), transparent 70%);
+    radial-gradient(60% 52% at 6% 4%, rgb(255 170 20 / 0.85), transparent 75%),
+    radial-gradient(58% 50% at 96% 96%, rgb(255 100 0 / 0.7), transparent 75%),
+    radial-gradient(50% 44% at 4% 94%, rgb(255 56 20 / 0.55), transparent 75%),
+    linear-gradient(160deg, #ffdcc0 0%, #ffc8b0 55%, #ffb698 100%);
   --ambient-rose:
-    radial-gradient(40% 36% at 88% 12%, rgb(255 46 99 / 0.15), transparent 70%),
-    radial-gradient(30% 28% at 52% 52%, rgb(255 176 32 / 0.08), transparent 70%);
+    radial-gradient(52% 46% at 94% 6%, rgb(255 30 90 / 0.65), transparent 75%),
+    radial-gradient(42% 38% at 50% 50%, rgb(255 190 60 / 0.28), transparent 72%);
   --ambient-flutes: linear-gradient(
     to right,
-    rgb(255 255 255 / 0.1),
-    rgb(255 255 255 / 0.04) 50%,
-    rgb(255 255 255 / 0.1)
+    rgb(255 255 255 / 0.08),
+    rgb(255 255 255 / 0.02) 50%,
+    rgb(255 255 255 / 0.08)
   );
 }
 
@@ -335,6 +324,20 @@
   --sidebar-ring: oklch(0.556 0 0);
   --scrollbar-thumb: oklch(1 0 0 / 22%);
   --scrollbar-thumb-hover: oklch(1 0 0 / 40%);
+  --ambient-warm:
+    radial-gradient(60% 52% at 6% 4%, rgb(255 150 20 / 0.5), transparent 72%),
+    radial-gradient(58% 50% at 96% 96%, rgb(255 90 0 / 0.42), transparent 72%),
+    radial-gradient(50% 44% at 4% 94%, rgb(230 40 10 / 0.34), transparent 72%),
+    linear-gradient(160deg, #2a0f08 0%, #1f0a0a 55%, #170707 100%);
+  --ambient-rose:
+    radial-gradient(52% 46% at 94% 6%, rgb(255 30 90 / 0.42), transparent 72%),
+    radial-gradient(42% 38% at 50% 50%, rgb(255 150 40 / 0.14), transparent 72%);
+  --ambient-flutes: linear-gradient(
+    to right,
+    rgb(255 255 255 / 0.03),
+    rgb(255 255 255 / 0) 50%,
+    rgb(255 255 255 / 0.03)
+  );
 }
 
 @layer base {
@@ -378,6 +381,18 @@
 }
 
 @layer utilities {
+  .bg-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  .bg-hour-grid {
+    background-image: linear-gradient(
+      to bottom,
+      transparent calc(3rem - 1px),
+      var(--border) 0
+    );
+    background-size: 100% 3rem;
+  }
   .draw-check {
     stroke-dasharray: 1;
   }

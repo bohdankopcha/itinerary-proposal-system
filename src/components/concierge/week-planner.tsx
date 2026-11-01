@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { PlannerDayColumn } from "@/components/concierge/planner-day-column";
 import { PlannerDayHeader } from "@/components/concierge/planner-day-header";
 import { Panel } from "@/components/panel";
@@ -39,7 +41,10 @@ export function WeekPlanner({
   onAdd: (date?: string, minutes?: number | null) => void;
   onOpenItem: (item: DraftItem) => void;
 }) {
-  const days = groupByDay(items, reservation);
+  const days = useMemo(
+    () => groupByDay(items, reservation),
+    [items, reservation],
+  );
   const pages = pageCount(days.length);
   const currentPage = Math.min(page, pages - 1);
   const visible = days.slice(

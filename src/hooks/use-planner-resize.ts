@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import {
   pixelsToMinutes,
@@ -89,15 +89,20 @@ export const usePlannerResize = ({
 
   const cancel = () => update(null);
 
-  return {
-    resizingKey: state?.item.key ?? null,
-    rangeFor: (item: DraftItem): TimeRange =>
+  const rangeFor = useCallback(
+    (item: DraftItem): TimeRange =>
       state?.item.key === item.key
         ? state.current
         : {
             startMinutes: minutesOf(item.scheduledAt),
             durationMinutes: itemDurationMinutes(item),
           },
+    [state],
+  );
+
+  return {
+    resizingKey: state?.item.key ?? null,
+    rangeFor,
     start,
     move,
     finish,

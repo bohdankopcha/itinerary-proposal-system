@@ -8,7 +8,7 @@ export function Panel({
   return (
     <Tag
       className={cn(
-        "border-panel-border bg-card shadow-panel rounded-2xl border backdrop-blur-xl backdrop-saturate-150",
+        "border-panel-border bg-card shadow-panel rounded-2xl border",
         className,
       )}
       {...props}
