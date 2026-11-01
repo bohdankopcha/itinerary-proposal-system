@@ -208,7 +208,7 @@ The repo is set up so AI coding agents (built around Claude Code) follow the sam
 
 ### Skills
 
-Project skills in `.claude/skills/` encode the repeatable procedures:
+Project skills in `.agents/skills/` (symlinked from `.claude/skills/`) encode the repeatable procedures:
 
 | Skill                 | Use for                                                                          |
 | --------------------- | -------------------------------------------------------------------------------- |
