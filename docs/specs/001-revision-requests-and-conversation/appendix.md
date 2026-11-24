@@ -26,17 +26,17 @@ Reference material for [spec.md](spec.md). Nothing here changes the contract; it
 
 ## B. Entry kinds
 
-| `kind`              | Author              | Body                     | Created by                |
-| ------------------- | ------------------- | ------------------------ | ------------------------- |
-| `chat`              | member or concierge | required                 | `POST /messages`          |
-| `changes_requested` | member              | required                 | `POST /request-changes`   |
-| `declined`          | member              | required                 | `POST /decline`           |
-| `revision_sent`     | concierge           | required (cover message) | `POST /resend`            |
-| `sent`              | system              | none                     | `POST /send` (revision 1) |
-| `approved`          | system              | none                     | approve transition        |
-| `paid`              | system              | none                     | pay transition            |
+| `kind`              | Author              | Body                     | Created by              | `revision` is                                               |
+| ------------------- | ------------------- | ------------------------ | ----------------------- | ----------------------------------------------------------- |
+| `chat`              | member or concierge | required                 | `POST /messages`        | `currentRevision` read in the same transaction              |
+| `changes_requested` | member              | required                 | `POST /request-changes` | the revision the member acted on (the latest, by the guard) |
+| `declined`          | member              | required                 | `POST /decline`         | the revision the member acted on                            |
+| `revision_sent`     | concierge           | required (cover message) | `POST /resend`          | the **new** revision, N+1                                   |
+| `sent`              | system              | none                     | `POST /send`            | 1                                                           |
+| `approved`          | system              | none                     | approve transition      | the revision approved                                       |
+| `paid`              | system              | none                     | pay transition          | the revision paid                                           |
 
-Transition entries are written in the same transaction as the transition. Only `chat` entries count toward the 500 cap ([FR-10](spec.md#2-requirements)): a status change must never be blocked by a full conversation.
+`revision` always means "the revision this entry is about". For `revision_sent` it is the number produced by the same conditional write that creates the revision, so there is no read-then-increment. Transition entries are written in the same transaction as the transition. Only `chat` entries count toward the 500 cap ([FR-10](spec.md#2-requirements)): a status change must never be blocked by a full conversation.
 
 ## C. Data model details
 
@@ -50,80 +50,88 @@ erDiagram
     Proposal ||--o{ SentEmail : "log"
 ```
 
-| Change                         | Notes                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`ProposalRevision`**         | `proposalId`, `number`, note, items snapshot (serialized), `schemaVersion`, `sentAt`. Unique on `(proposalId, number)`. Total is derived, never stored.                                                                                                                                                                                   |
-| **`ProposalMessage`**          | `proposalId`, `kind`, `authorRole` (`member` / `concierge` / `system`), `authorName`, `body` (null for system entries), `revision` (the `currentRevision` read in the writing transaction), `clientId` (nullable, unique per proposal, stored with the payload to detect conflicts), `createdAt`. Index on `(proposalId, createdAt, id)`. |
-| **`Proposal.currentRevision`** | Integer, 0 until first send. Denormalized for the atomic guard ([D-7](#e-decisions-and-alternatives)). Invariant tested.                                                                                                                                                                                                                  |
-| **`Proposal.declinedAt`**      | One-shot timestamp.                                                                                                                                                                                                                                                                                                                       |
-| **`SentEmail.revision`**       | Which revision each email delivered.                                                                                                                                                                                                                                                                                                      |
-| **`status` values**            | `changes_requested` and `declined`, lowercase strings defined once in `src/lib/schemas/proposal.ts` (no DB enums, per existing decision).                                                                                                                                                                                                 |
+| Change                         | Notes                                                                                                                                                                                                                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`ProposalRevision`**         | `proposalId`, `number`, note, items snapshot (serialized), `schemaVersion`, `coverMessage` and `signature` (null for revision 1), `sentAt`. Unique on `(proposalId, number)`. Total is derived, never stored.                                                                                               |
+| **`ProposalMessage`**          | `proposalId`, `kind`, `authorRole` (`member` / `concierge` / `system`), `authorName`, `body` (null for system entries), `revision` (see [B](#b-entry-kinds)), `clientId` (nullable, unique per proposal, stored with the payload to detect conflicts), `createdAt`. Index on `(proposalId, createdAt, id)`. |
+| **`Proposal.currentRevision`** | Integer, 0 until first send. Denormalized for the atomic guard ([D-7](#e-decisions-and-alternatives)). Invariant tested.                                                                                                                                                                                    |
+| **`Proposal.declinedAt`**      | One-shot timestamp.                                                                                                                                                                                                                                                                                         |
+| **`SentEmail.revision`**       | Which revision each email delivered.                                                                                                                                                                                                                                                                        |
+| **`status` values**            | `changes_requested` and `declined`, lowercase strings defined once in `src/lib/schemas/proposal.ts` (no DB enums, per existing decision).                                                                                                                                                                   |
 
 Rules:
 
+- **Cover message and signature are written twice, once.** A `resend` writes them on the new revision (so the member view needs no join) and on the `revision_sent` entry (so the conversation renders on its own), from the same input in the same transaction. Both are append-only, so they can never drift ([D-15](#e-decisions-and-alternatives)).
 - **Repeatable events have no timestamp column.** `sentAt`, `approvedAt`, `paidAt`, `declinedAt` happen at most once. `Proposal.sentAt` keeps meaning "first sent"; each revision carries its own `sentAt`.
 - **Working copy equals latest revision** in `sent`, `approved` and `paid`. It may differ in `draft` and `changes_requested` (editable), and in `declined`, where the concierge may hold unsent edits made before the member declined. Those edits are kept but never shown: the builder and preview render the latest revision.
 - **Append-only.** No update or delete path for `ProposalRevision` or `ProposalMessage`.
+- **Change summary function.** Items are compared as a **multiset** on full content (category, title, description, scheduled time, price, duration): order is ignored and duplicates count. The result is `{ added, removed, totalDifferenceCents, noteChanged }`. "No itinerary changes" means both multisets are equal; `noteChanged` is separate, so a note-only edit reads "No itinerary changes" plus "Note updated". An edited item appears as one removed and one added.
 - **Snapshot compatibility.** Revisions are immutable but the item schema is not. Each snapshot stores a `schemaVersion`, reads go through one upgrade function, and later schema changes to items must be backward compatible (new fields optional with a default). A snapshot that fails to parse is a logged `INTERNAL_ERROR`, never a silent blank page.
-- **Ordering.** Entries sort by `(createdAt, id)`. This is stable but not strictly causal within one millisecond (cuid ids are not time-ordered to that precision). Acceptable in a single process, where each transition writes exactly one entry per transaction; the backfill uses the distinct existing timestamps.
+- **Ordering.** Entries sort by `(createdAt, id)`. This is stable but not strictly causal within one millisecond (cuid ids are not time-ordered to that precision). Acceptable in a single process, where each transition writes exactly one entry per transaction.
 - **`lastActivityAt`** is derived: `updatedAt` for a draft, the newest entry's `createdAt` for a sent proposal.
 - **Seed (SHOULD).** One demo proposal in `changes_requested` with a short conversation, so a reviewer sees the feature without clicking through the loop.
 
 ## D. Edge cases
 
-| #    | Situation                                                               | Expected behavior                                                                                                                                                                 |
-| ---- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E-1  | Member approves while another tab (or a stale page) requests changes    | Exactly one wins by conditional write. The loser gets `INVALID_TRANSITION`, refetches and converges. No orphan entry.                                                             |
-| E-2  | Member acts on revision 1 after the concierge resent revision 2         | `STALE_REVISION`, nothing written. The UI shows the banner. Typed text is kept.                                                                                                   |
-| E-3  | Two concierge tabs resend at once                                       | One creates revision N+1. The other gets `INVALID_TRANSITION` (status is already `sent`). The unique constraint is the backstop.                                                  |
-| E-4  | Member declines while the concierge is editing                          | The concierge's next save returns `NOT_EDITABLE`. The builder switches to the latest revision, read-only, with the decline reason. Unsent edits stay in the database, not shown.  |
-| E-5  | A chat message is posted as the status becomes `paid`                   | Either order is valid. If it loses, `CONVERSATION_CLOSED` and the text stays in the composer.                                                                                     |
-| E-6  | Resend with zero items                                                  | `EMPTY_PROPOSAL` (422). Full rollback: no revision, no email, no entry.                                                                                                           |
-| E-7  | Resend with unchanged content                                           | Allowed. Labeled "No itinerary changes".                                                                                                                                          |
-| E-8  | Response lost after a successful chat post, then retry                  | Same `clientId` and payload: the server returns the existing entry, even if the conversation closed in between. Same `clientId` with a different payload: `IDEMPOTENCY_CONFLICT`. |
-| E-9  | Member opens the link in `changes_requested` before any concierge reply | Sees the last revision, their own request and "Your concierge is working on it".                                                                                                  |
-| E-10 | The revision 1 email is opened after revision 2 exists                  | Same URL, shows the latest revision. Correct by design.                                                                                                                           |
-| E-11 | Whitespace-only, empty or 2001-character body                           | `VALIDATION_ERROR`. Nothing written.                                                                                                                                              |
-| E-12 | Member posts to a `draft`                                               | `CONVERSATION_CLOSED`. The list endpoint returns empty.                                                                                                                           |
-| E-13 | Two entries in the same millisecond                                     | Ordered by id as the tiebreak. Stable across refetches, not guaranteed causal (see [C](#c-data-model-details)).                                                                   |
-| E-14 | Declined proposal, concierge wants to continue                          | Create a new proposal for the reservation. No link between the two conversations (non-goal).                                                                                      |
-| E-15 | Response lost after a successful transition, then the client retries    | The retry is `INVALID_TRANSITION` (repeating a status is an error by design). The UI refetches; if the status now equals the target it shows the success state, not an error.     |
-| E-16 | The conversation already holds 500 chat entries                         | Chat posts get `CONVERSATION_CLOSED`. Every transition still succeeds and still writes its entry, because transition entries are exempt from the cap.                             |
+| #    | Situation                                                               | Expected behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E-1  | Member approves while another tab (or a stale page) requests changes    | Exactly one wins by conditional write. The loser gets `INVALID_TRANSITION`, refetches and converges. No orphan entry.                                                                                                                                                                                                                                                                                                                                                                                          |
+| E-2  | Member acts on revision 1 after the concierge resent revision 2         | `STALE_REVISION`, nothing written. The UI shows the banner. Typed text is kept but not auto-sent ([E-18](#d-edge-cases)).                                                                                                                                                                                                                                                                                                                                                                                      |
+| E-3  | Two concierge tabs resend at once                                       | One creates revision N+1. The other gets `INVALID_TRANSITION` (status is already `sent`). The unique constraint is the backstop.                                                                                                                                                                                                                                                                                                                                                                               |
+| E-4  | Member declines while the concierge is editing                          | The concierge's next save returns `NOT_EDITABLE`. The builder switches to the latest revision, read-only, with the decline reason. Unsent edits stay in the database, not shown.                                                                                                                                                                                                                                                                                                                               |
+| E-5  | A chat message is posted as the status becomes `paid`                   | Check and insert are one transaction and writers are serialized, so the chat either commits before the `paid` entry (and sorts before it) or gets `CONVERSATION_CLOSED`. It never appears after a terminal entry. The rejected text stays in the composer.                                                                                                                                                                                                                                                     |
+| E-6  | Resend with zero items                                                  | `EMPTY_PROPOSAL` (422). Full rollback: no revision, no email, no entry.                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| E-7  | Resend with unchanged content                                           | Allowed. Labeled "No itinerary changes", plus "Note updated" if only the note differs.                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| E-8  | Response lost after a successful chat post, then retry                  | Same `clientId` and payload: the server returns the existing entry, even if the conversation closed in between. Same `clientId`, different payload: `IDEMPOTENCY_CONFLICT`. Two concurrent duplicates: the unique violation is caught and treated as a replay.                                                                                                                                                                                                                                                 |
+| E-9  | Member opens the link in `changes_requested` before any concierge reply | Sees the last revision, their own request and "Your concierge is working on it".                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| E-10 | The revision 1 email is opened after revision 2 exists                  | Same URL, shows the latest revision. Correct by design.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| E-11 | Whitespace-only, empty or 2001-character body                           | `VALIDATION_ERROR`. Nothing written.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| E-12 | Member posts chat to a `draft`                                          | `CONVERSATION_CLOSED`. The list endpoint returns empty.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| E-13 | Two entries in the same millisecond                                     | Ordered by id as the tiebreak. Stable across refetches, not guaranteed causal (see [C](#c-data-model-details)).                                                                                                                                                                                                                                                                                                                                                                                                |
+| E-14 | Declined proposal, concierge wants to continue                          | Create a new proposal for the reservation. No link between the two conversations (non-goal).                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| E-15 | Response lost after a successful transition, then the client retries    | The retry is `INVALID_TRANSITION` (repeating a status is an error by design). The UI refetches and decides by **entry, not status**: for request changes, decline and resend it reports success only if the conversation holds this member's (or concierge's) matching entry of that kind with the same text after the action began; otherwise it shows the error. For payload-less approve and pay, status equal to the target is accepted. This avoids a false success when another tab sent different text. |
+| E-16 | The conversation already holds 500 chat entries                         | Chat posts get `CONVERSATION_FULL`. Every transition still succeeds and still writes its entry, because transition entries are exempt from the cap.                                                                                                                                                                                                                                                                                                                                                            |
+| E-17 | A `PUT` races a resend in another tab                                   | Both write their status condition first, so one serializes after the other. If the resend commits first the `PUT` updates 0 rows and returns `NOT_EDITABLE`; if the `PUT` commits first the resend snapshots the saved items. Working copy equals latest revision after a resend.                                                                                                                                                                                                                              |
+| E-18 | Member types a request on revision 1, then opens revision 2             | The text stays in the sheet, marked "written for revision 1". It is never auto-submitted; sending needs a fresh tap, now acting on revision 2, which the member has seen.                                                                                                                                                                                                                                                                                                                                      |
 
 ## E. Decisions and alternatives
 
 Each is a candidate entry for [decisions.md](../../decisions.md).
 
-| ID   | Decision                                                                                                                                             | Alternatives rejected                                                             | Why                                                                                                                                                                                                            |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D-1  | Two member actions: **request changes** (loops) and **decline** (terminal)                                                                           | One "decline with message" that always loops; changes-only                        | The business outcomes differ (negotiate vs. lost deal). One status per outcome keeps reporting honest.                                                                                                         |
-| D-2  | **Immutable revisions** under one proposal and one link                                                                                              | New proposal with `supersedesId` (new link, cluttered list); edit `sent` in place | One URL for the member, full history for the concierge, immutability intact.                                                                                                                                   |
-| D-3  | Conversation **per proposal**                                                                                                                        | Per reservation                                                                   | Entries relate to a revision and a lifecycle. A per-reservation chat needs cross-proposal rules.                                                                                                               |
-| D-4  | **Polling**                                                                                                                                          | SSE/WebSocket                                                                     | No long-lived-connection infrastructure, no auth to scope a channel. 5 s latency is fine here. Revisit if a real backend appears.                                                                              |
-| D-5  | Revision snapshot stored as **serialized items with a `schemaVersion`**; the change summary compares full item content                               | Items table with `revisionId`; true per-item diff                                 | Snapshots never change and are never queried by field, so a second items table buys nothing. The version covers future schema changes. Item ids are unstable by design, so an edit shows as "removed + added". |
-| D-6  | **Dedicated verbs** for transitions with a payload or side effect; `PATCH` stays for payload-less member moves                                       | Overload `PATCH` with a body per status                                           | Same principle as `sent` only via `/send`: side effects can't be skipped.                                                                                                                                      |
-| D-7  | `currentRevision` on `Proposal`; every member write is `updateMany where { id, status, currentRevision }`; a 0-row result is classified by a re-read | Read the latest revision, then write                                              | One atomic statement, no read-then-write window. The re-read only picks the error to report, never whether to write. The cost is a denormalized counter, guarded by an invariant test.                         |
-| D-8  | **Member reads the latest revision**, not the working copy                                                                                           | Member reads the working copy                                                     | After a request the concierge edits; the member must not watch a half-edited itinerary.                                                                                                                        |
-| D-9  | Repeatable events live in the conversation and revisions; one-shot ones stay as columns                                                              | A timestamp column per status                                                     | `changes_requested` repeats. Columns would silently keep only the last one.                                                                                                                                    |
-| D-10 | Resend of **unchanged** content is allowed                                                                                                           | Reject with `NO_CHANGES`                                                          | Without it the loop dead-ends when the answer is "we can't change that". The concierge explains in the cover message and the member decides.                                                                   |
-| D-11 | Request and decline messages are **mandatory**                                                                                                       | Optional reason                                                                   | A decline with no reason teaches the business nothing; a request with no text is meaningless. The friction is the point.                                                                                       |
-| D-12 | Chat messages are **optimistic** with `clientId` idempotency                                                                                         | Pessimistic like other creates                                                    | Chat that waits on the network feels broken. The server adds only id and timestamp, so rollback is trivial.                                                                                                    |
-| D-13 | The 500 cap counts **chat entries only**                                                                                                             | Cap all entries; reserve headroom for transitions                                 | Transition entries are bounded by the state machine, and a status change must never fail because of chat volume. A flooded chat can't hold a deal hostage.                                                     |
-| D-14 | `declined` is **excluded** from the working-copy invariant                                                                                           | Reset the working copy to the latest revision when declining                      | Resetting destroys the concierge's unsent work for no benefit. Keeping it is harmless because the builder and preview render the latest revision.                                                              |
+| ID   | Decision                                                                                                                                                                                                    | Alternatives rejected                                                             | Why                                                                                                                                                                                                                                      |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D-1  | Two member actions: **request changes** (loops) and **decline** (terminal)                                                                                                                                  | One "decline with message" that always loops; changes-only                        | The business outcomes differ (negotiate vs. lost deal). One status per outcome keeps reporting honest.                                                                                                                                   |
+| D-2  | **Immutable revisions** under one proposal and one link                                                                                                                                                     | New proposal with `supersedesId` (new link, cluttered list); edit `sent` in place | One URL for the member, full history for the concierge, immutability intact.                                                                                                                                                             |
+| D-3  | Conversation **per proposal**                                                                                                                                                                               | Per reservation                                                                   | Entries relate to a revision and a lifecycle. A per-reservation chat needs cross-proposal rules.                                                                                                                                         |
+| D-4  | **Polling**                                                                                                                                                                                                 | SSE/WebSocket                                                                     | No long-lived-connection infrastructure, no auth to scope a channel. 5 s latency is fine here. Revisit if a real backend appears.                                                                                                        |
+| D-5  | Revision snapshot stored as **serialized items with a `schemaVersion`**; the change summary compares full item content as a multiset                                                                        | Items table with `revisionId`; true per-item diff                                 | Snapshots never change and are never queried by field, so a second items table buys nothing. The version covers future schema changes. Item ids are unstable by design, so an edit shows as "removed + added".                           |
+| D-6  | **Dedicated verbs** for transitions with a payload or side effect; `PATCH` stays for payload-less member moves                                                                                              | Overload `PATCH` with a body per status                                           | Same principle as `sent` only via `/send`: side effects can't be skipped.                                                                                                                                                                |
+| D-7  | `currentRevision` on `Proposal`; every member write is `updateMany where { id, status, currentRevision }`; `PUT` and `resend` write their status condition first; a 0-row result is classified by a re-read | Read the latest revision, then write                                              | One atomic statement, no read-then-write window, for member actions and for concierge edits alike. The re-read only picks the error to report, never whether to write. The cost is a denormalized counter, guarded by an invariant test. |
+| D-8  | **Member reads the latest revision**, not the working copy                                                                                                                                                  | Member reads the working copy                                                     | After a request the concierge edits; the member must not watch a half-edited itinerary.                                                                                                                                                  |
+| D-9  | Repeatable events live in the conversation and revisions; one-shot ones stay as columns                                                                                                                     | A timestamp column per status                                                     | `changes_requested` repeats. Columns would silently keep only the last one.                                                                                                                                                              |
+| D-10 | Resend of **unchanged** content is allowed                                                                                                                                                                  | Reject with `NO_CHANGES`                                                          | Without it the loop dead-ends when the answer is "we can't change that". The concierge explains in the cover message and the member decides.                                                                                             |
+| D-11 | Request and decline messages are **mandatory**                                                                                                                                                              | Optional reason                                                                   | A decline with no reason teaches the business nothing; a request with no text is meaningless. The friction is the point.                                                                                                                 |
+| D-12 | Chat messages are **optimistic** (P2) with `clientId` idempotency                                                                                                                                           | Pessimistic like other creates                                                    | Chat that waits on the network feels broken. The server adds only id and timestamp, so rollback is trivial.                                                                                                                              |
+| D-13 | The 500 cap counts **chat entries only**, with its own error code `CONVERSATION_FULL`                                                                                                                       | Cap all entries; reserve headroom for transitions                                 | Transition entries are bounded by the state machine, and a status change must never fail because of chat volume. A flooded chat can't hold a deal hostage. A separate code lets the UI say "full" instead of "closed".                   |
+| D-14 | `declined` is **excluded** from the working-copy invariant                                                                                                                                                  | Reset the working copy to the latest revision when declining                      | Resetting destroys the concierge's unsent work for no benefit. Keeping it is harmless because the builder and preview render the latest revision.                                                                                        |
+| D-15 | **Cover message and signature live on the revision**, and are copied onto the `revision_sent` entry                                                                                                         | Only on the entry, joined on read                                                 | The member view and revision endpoint need no join, and a revision is self-contained for what the member saw. Both copies are append-only, written once from one input, so they can't drift.                                             |
+| D-16 | **One consistent member view response** (status, revision, snapshot, cover, signature, summary) read in one transaction                                                                                     | Compose `GET detail` and `GET revision` from two requests                         | Two requests can straddle a resend and show status of one moment with items of another. One response makes the "displayed revision" well defined.                                                                                        |
 
 ## F. Surface behavior details
 
 ### Member
 
 - **Request changes and Decline share one sheet**, with a mandatory message and a different heading and button. Decline asks for explicit confirmation; one tap must not end a deal.
-- **The conversation** opens as a bottom sheet on mobile and a side panel on wide screens. Concierge entries show the signature; the member's own entries show "You". Until a concierge entry exists the concierge is "Your concierge", in the status line and everywhere else.
+- **The conversation** opens as a bottom sheet on mobile and a side panel on wide screens. Concierge entries show the signature; the member's own entries show "You". Until a concierge entry exists the concierge is "Your concierge", in the status line and everywhere else; afterwards the status line uses the latest concierge entry's signature.
 - **`declined`** shows a quiet closing page with the date and a read-only conversation. It reveals nothing beyond what the member already saw.
-- **Stale protection.** The banner "A new version is ready" appears whenever the client learns of a newer revision: a refetch (mount, focus), a `STALE_REVISION` response, or polling (P2). Actions stay disabled until the member opens it. A rejected action never clears the member's typed text.
+- **Displayed vs. latest revision.** The client holds `displayedRevision` and its snapshot, separately from the latest revision number it last learned. A newer one is learned by refetch (mount, focus), a `STALE_REVISION` response, or polling (P2). The banner "A new version is ready" appears, the displayed snapshot stays on screen, and actions stay disabled until the member opens the new revision. Every action sends `displayedRevision`.
+- **Typed text.** A rejected action never clears the member's text. After the member opens the newer revision the text stays in the sheet, marked "written for revision N", and is never auto-sent: the member must tap send again on the revision they have now seen ([E-18](#d-edge-cases)).
 
 ### Concierge
 
 - **Reply & resend dialog:** cover message (required), signature (required, prefilled from the last one used, kept in browser-local storage as a convenience, never as source of truth) and the change summary against the previous revision. An unchanged itinerary is labeled as such.
 - **Pending request (pinned):** the latest `changes_requested` entry plus every member chat entry after it, until the next resend. A clarification in chat ("Tuesday afternoon, not morning") therefore reaches the concierge next to the original request.
+- **Proposals list:** keeps its current order (newest first). `changes_requested` rows get a "needs you" accent, nothing floats.
 - **Conversation tab** beside the builder; the composer has a signature field.
 - **Revisions list (P2):** each revision with date, summary and a read-only view.
 - **Preview** renders the working copy in `draft` and `changes_requested`, which is exactly what the member will see after sending. In every other status it renders the latest revision. One rule, no ambiguity.
@@ -135,10 +143,10 @@ Extends [proposal-lifecycle.md](../../proposal-lifecycle.md), which today limits
 | Operation                        | Optimistic                                                                   | Rendered from the server response                                              |
 | -------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Request changes, decline, resend | Status badge only                                                            | The new conversation entry, the success state, and for resend the new revision |
-| Chat message                     | Appears immediately as _pending_ with its `clientId`, reconciled on response | Final id and timestamp                                                         |
-| Chat failure                     | Marked _failed_ with **Retry**, which reuses the same `clientId`             |                                                                                |
+| Chat message (P2)                | Appears immediately as _pending_ with its `clientId`, reconciled on response | Final id and timestamp                                                         |
+| Chat failure (P2)                | Marked _failed_ with **Retry**, which reuses the same `clientId`             |                                                                                |
 
-Rollback, refetch on `INVALID_TRANSITION` and `STALE_REVISION`, and invalidate-on-settle work as in the lifecycle doc. When a retried transition returns `INVALID_TRANSITION` and the refetched status already equals the target, the UI shows success ([E-15](#d-edge-cases)). Chat is the one create operation allowed to be optimistic, because the server adds only an id and a timestamp to what the user typed.
+In P1 chat is not optimistic: the message appears when the response arrives. Rollback, refetch on `INVALID_TRANSITION` and `STALE_REVISION`, and invalidate-on-settle work as in the lifecycle doc. A retried transition that returns `INVALID_TRANSITION` is reconciled by entry, not by status ([E-15](#d-edge-cases)). Chat is the one create operation allowed to be optimistic, because the server adds only an id and a timestamp to what the user typed.
 
 ### Polling and freshness
 
@@ -155,11 +163,12 @@ The app has no authentication; the unguessable proposal id is the member's acces
 
 - **Before this feature**, a `sent` proposal was immutable and `NOT_EDITABLE`, so a member link could do nothing but approve and pay.
 - **After it**, `PUT` is allowed in `changes_requested` and `POST /resend` is not role-gated. Anyone holding a member link can therefore edit itinerary content and prices, resend under any signature, and then approve the result, and the system records it as a legitimate concierge revision that the member approved. This is the same accepted trust model as the open dashboard, now covering **content and money**, not only chat labels.
-- **Accepted for this scope, not for production.** Production needs real authentication, a server-derived role, role-gated routes (members cannot call `PUT` or `resend`) and signed expiring links.
+- **`GET /api/proposals/[id]` returns the working copy** and is open to anyone with the id. D-8 ("the member sees the latest revision") therefore holds for the member _page_, enforced by tests that the page reads only `…/revisions/latest`, not for a member who calls the detail endpoint by hand. Real enforcement needs roles.
+- **Accepted for this scope, not for production.** Production needs real authentication, a server-derived role, role-gated routes (members cannot call `PUT`, `resend` or the working-copy `GET`) and signed expiring links.
 - **The member's name is never client-supplied** ([FR-11](spec.md#2-requirements)). The concierge's is, because no concierge identity exists. The signature is a display label, and the UI must not present it as verified.
 - **XSS:** plain text, escaped on render. No HTML or Markdown rendering, no link auto-embedding.
 - **Abuse limits:** 2000 characters per entry, 500 chat entries per conversation. Transition entries are exempt so the cap cannot freeze a deal ([D-13](#e-decisions-and-alternatives)). Rate limiting is out of scope.
-- **Information leak:** a draft's conversation returns an empty list and the member page keeps its "not available" behavior.
+- **Information leak:** a draft's conversation returns an empty list, and `…/revisions/latest` on a draft is `404`, the same as an unknown id.
 
 ### Accessibility
 
@@ -185,25 +194,28 @@ AC-2  Given a proposal in changes_requested and the concierge has edited the wor
       When the member loads the proposal
       Then the member sees revision 1, not the edited items
 
-AC-3  Given the member is viewing revision 1 and the concierge has resent revision 2
+AC-3  Given the member is displaying revision 1 and the concierge has resent revision 2
       When the member approves with revision 1
       Then the response is 409 STALE_REVISION and the status is unchanged
-      And if the status were also not a legal source, the response is INVALID_TRANSITION instead
+      And a member action on a status that is not a legal source returns INVALID_TRANSITION, not STALE_REVISION
 
 AC-4  Given a proposal in changes_requested with at least one item
       When the concierge resends with a cover message and a signature
-      Then revision 2 exists, the status is sent, a SentEmail for revision 2 exists
-      And a revision_sent entry with the signature is appended
+      Then revision 2 exists with that cover message and signature, the status is sent
+      And a SentEmail for revision 2 exists
+      And a revision_sent entry with the same text and signature, about revision 2, is appended
 
 AC-5  Given a proposal in changes_requested with no items
       When the concierge resends
       Then the response is 422 EMPTY_PROPOSAL and no revision, email or entry exists
 
 AC-6  Given a resend whose items equal revision 1
-      Then it succeeds and the change summary reports "no changes"
+      Then it succeeds and the change summary reports no item changes
+      And if only the note differs, the summary also reports "Note updated"
 
 AC-7  Given revision 2 differs from revision 1 by one added item
       Then the summary lists that item as added and shows the total difference
+      And reordering the same items, or duplicating an item, is compared as a multiset
 
 AC-8  Given a paid or declined proposal
       When anyone posts a chat message
@@ -216,13 +228,17 @@ AC-9  Given a chat message was posted with clientId X
 AC-10 Given two simultaneous resend requests
       Then exactly one succeeds and the revision numbers are unique and contiguous
 
-AC-11 Given the member is on revision 1 and the client learns of revision 2
+AC-11 Given the member displays revision 1 and the client learns of revision 2
       (by refetch on focus, a STALE_REVISION response, or polling)
-      Then a banner appears and Approve stays disabled until the member opens revision 2
+      Then a banner appears and revision 1 stays on screen
+      And Approve stays disabled until the member opens revision 2
+      And every action sends the displayed revision
 
-AC-12 Given existing proposals sent, approved and paid before this feature
+AC-12 Given existing proposals sent, approved and paid before this feature,
+      including one approved or paid with a missing approvedAt or paidAt
       When the migration runs
-      Then each has revision 1 equal to its items, currentRevision 1 and matching events
+      Then each has revision 1 equal to its items, currentRevision 1,
+      and one entry for every status it passed through, with a fallback timestamp where the column was empty
 
 AC-13 Given a sent proposal at revision 1
       When the member declines with "Plans changed"
@@ -240,7 +256,7 @@ AC-15 Given a resend of revision 2 with cover message "Moved the spa" signed "Ma
 
 AC-16 Given a conversation holding 500 chat entries
       When anyone posts a chat message
-      Then the response is 409 CONVERSATION_CLOSED
+      Then the response is 409 CONVERSATION_FULL
       And approve, pay, request changes, decline and resend still succeed and append their entries
 
 AC-17 Given a chat body of "<b>hi</b>\nthere"
@@ -248,15 +264,16 @@ AC-17 Given a chat body of "<b>hi</b>\nthere"
       And it renders as literal text with the line break preserved
       And a whitespace-only body or a 2001-character body returns 400 VALIDATION_ERROR
 
-AC-18 Given a member posts a chat message
-      Then its authorName equals the member's name from the database
-      And a member request that includes authorName returns 400 VALIDATION_ERROR
-      And a concierge request without authorName returns 400 VALIDATION_ERROR
+AC-18 Given a member posts a chat message or requests changes
+      Then the entry's authorName equals the member's name from the database
+      And a member chat request that includes authorName returns 400 VALIDATION_ERROR
+      And a concierge chat request without authorName returns 400 VALIDATION_ERROR
 
 AC-19 Given a chat message was posted with clientId X and the proposal then became paid
       When the same request is replayed
       Then the original entry is returned
       And a replay with the same clientId and a different body returns 409 IDEMPOTENCY_CONFLICT
+      And two concurrent requests with the same new clientId produce exactly one entry
 
 AC-20 Given the member's tab is visible on revision 1
       When the concierge resends revision 2
@@ -273,6 +290,29 @@ AC-23 Given revisions 1 and 2 exist
       When the concierge opens revision 1
       Then it renders read-only as an immutable snapshot
       And opening revision 2 also shows its change summary against revision 1
+
+AC-24 Given a proposal in changes_requested
+      When a PUT and a resend run concurrently
+      Then exactly one of them wins and the other returns NOT_EDITABLE
+      And after the resend the working copy equals the latest revision
+
+AC-25 Given a proposal at revision 2 with cover message "Moved the spa" signed "Maya"
+      When the member page requests revisions/latest
+      Then one response contains the status, revision number, items, cover message, signature and change summary
+      And a request for revisions/abc returns 400, revisions/99 returns 404, and revisions/latest on a draft returns 404
+
+AC-26 Given a PATCH with status declined, changes_requested or sent
+      Then the response is 409 INVALID_TRANSITION
+      And a PATCH with an unknown status value returns 400 VALIDATION_ERROR
+
+AC-27 Given the member typed a request on revision 1 and then opens revision 2
+      Then the text is still in the sheet, marked as written for revision 1
+      And nothing is sent until the member taps send again
+
+AC-28 Given the member's request-changes succeeded but the response was lost
+      When the client retries and receives INVALID_TRANSITION
+      Then the UI refetches and shows success because the conversation holds the member's matching entry
+      And if another tab sent different text, the UI shows the error instead
 ```
 
 ## I. Test plan and traceability
@@ -281,68 +321,74 @@ Levels: **U** unit (pure code), **A** API (real route handlers against the throw
 
 ### Requirements
 
-| Requirement | Acceptance criteria | Level | Test focus                                                                                                                                                                       |
-| ----------- | ------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-1, FR-2  | AC-1, AC-13, AC-14  | U, A  | **Every (from, to) pair** of the 6 statuses asserted legal or illegal. Extends `state-machine.test.ts`. Message required on both.                                                |
-| FR-3        | AC-4, AC-5, AC-6    | A     | `PUT` allowed in `draft` and `changes_requested`, `NOT_EDITABLE` elsewhere; resend rules; unchanged resend succeeds.                                                             |
-| FR-4, FR-5  | AC-2, AC-4          | A     | One revision per send. The member endpoint returns the latest revision even while the working copy differs.                                                                      |
-| FR-6        | AC-3                | A     | `STALE_REVISION` on every member action with **no row changes**. 0-row result is re-read and classified in check order.                                                          |
-| FR-7        | AC-7                | U     | Change-summary function: added, removed, total difference, unchanged, edited item as removed + added.                                                                            |
-| FR-8        | AC-1, AC-4, AC-13   | U, A  | Stream ordering, transition entries written with the transition, drafts have none.                                                                                               |
-| FR-9        | AC-8                | A     | Open or closed per status, one shared function.                                                                                                                                  |
-| FR-10       | AC-16, AC-17        | A, H  | Length limits, plain text stored verbatim, escaped on render, chat-only cap, transitions exempt.                                                                                 |
-| FR-11       | AC-18               | A     | Member name from the database, `authorName` rules per author.                                                                                                                    |
-| FR-12       | AC-9, AC-19, AC-22  | A, H  | Replay returns the original, replay after close, payload conflict, client retry reuses the id.                                                                                   |
-| FR-13       | AC-20               | H     | Fake timers: new revision or entry reaches the other side within 10 s; polling pauses when hidden and stops when closed.                                                         |
-| FR-14       | AC-11               | H     | Banner on refetch, on `STALE_REVISION`, on polling; actions disabled until opened.                                                                                               |
-| FR-15       | AC-4, AC-21         | H     | Pending request block includes later member chat; resend dialog shows the summary; list shows new statuses, revision, last activity.                                             |
-| FR-16       | AC-15               | A     | Email body preview contains revision, cover message, signature, absolute link.                                                                                                   |
-| FR-17       | AC-22               | H     | Optimistic chat reconciles; failure shows Retry; status badge optimistic and rolls back.                                                                                         |
-| FR-18       | AC-23               | A, H  | Revision list and single revision; read-only view.                                                                                                                               |
-| Invariants  | AC-2, AC-14         | A     | `currentRevision` equals the highest revision number. Working copy equals latest revision in `sent`, `approved`, `paid`, asserted after every transition. `lastActivityAt` rule. |
-| Migration   | AC-12               | A     | Backfill produces revision 1 and matching entries for existing non-draft proposals.                                                                                              |
+| Requirement | Acceptance criteria       | Level | Test focus                                                                                                                                                                                                |
+| ----------- | ------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-1, FR-2  | AC-1, AC-13, AC-14, AC-26 | U, A  | **Every (from, to) pair** of the 6 statuses asserted legal or illegal. Extends `state-machine.test.ts`. Message required on both. `PATCH` with non-member targets is `409`.                               |
+| FR-3        | AC-4, AC-5, AC-6          | A     | `PUT` allowed in `draft` and `changes_requested`, `NOT_EDITABLE` elsewhere; resend rules; cover message and signature stored on the revision; unchanged resend succeeds.                                  |
+| FR-4        | AC-2, AC-4                | A     | One revision per send; no update or delete path.                                                                                                                                                          |
+| FR-5        | AC-2, AC-25               | A     | One consistent response; the member page never calls the working-copy endpoint; `400` and `404` cases.                                                                                                    |
+| FR-6        | AC-3                      | A     | `STALE_REVISION` on every member action with **no row changes**. 0-row result is re-read and classified in check order.                                                                                   |
+| FR-7        | AC-6, AC-7                | U     | Change-summary function: multiset comparison, order and duplicates, total difference, `noteChanged`, edited item as removed + added.                                                                      |
+| FR-8        | AC-1, AC-4, AC-13         | U, A  | Stream ordering, transition entries written with the transition, drafts have none.                                                                                                                        |
+| FR-9        | AC-8                      | U, A  | `canPostChat(status, count)` per status; open or closed on the server.                                                                                                                                    |
+| FR-10       | AC-16, AC-17              | A, H  | Length limits, plain text stored verbatim, escaped on render, chat-only cap with `CONVERSATION_FULL`, transitions exempt.                                                                                 |
+| FR-11       | AC-18                     | A     | Member name from the database for chat and transition entries; `authorName` rules per author.                                                                                                             |
+| FR-12       | AC-9, AC-19, AC-22        | A, H  | Replay returns the original, replay after close, payload conflict, concurrent duplicate, client retry reuses the id.                                                                                      |
+| FR-13       | AC-20                     | H     | Fake timers: new revision or entry reaches the other side within 10 s; polling pauses when hidden and stops when closed.                                                                                  |
+| FR-14       | AC-11, AC-27              | H     | Displayed vs. latest revision; banner on refetch, on `STALE_REVISION`, on polling; actions disabled until opened; typed text kept and never auto-sent.                                                    |
+| FR-15       | AC-4, AC-21               | H     | Pending request block includes later member chat; resend dialog shows the summary; list shows new statuses, revision, last activity.                                                                      |
+| FR-16       | AC-15                     | A     | Email body preview contains revision, cover message, signature, absolute link.                                                                                                                            |
+| FR-17       | AC-22                     | H     | Optimistic chat reconciles; failure shows Retry; status badge optimistic and rolls back.                                                                                                                  |
+| FR-18       | AC-23                     | A, H  | Revision list and single revision; read-only view.                                                                                                                                                        |
+| FR-19       | AC-24                     | A     | Concurrent `PUT` and resend: one wins, working copy equals latest revision.                                                                                                                               |
+| Invariants  | AC-2, AC-14, AC-24        | A     | `currentRevision` equals the highest revision number. Working copy equals latest revision in `sent`, `approved`, `paid`, asserted after every transition. `lastActivityAt` rule. Entry `revision` values. |
+| Migration   | AC-12                     | A     | Backfill (SQL in the migration) produces revision 1 and an entry per passed status, with fallback timestamps.                                                                                             |
 
 ### Edge cases
 
 | Edge case | Covered by              | Level | Notes                                                                                                                  |
 | --------- | ----------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
 | E-1       | AC-3                    | A     | **Concurrent** approve vs. request-changes: one 200, one 409, one entry. Extends the existing concurrent-approve test. |
-| E-2       | AC-3, AC-11             | A, H  | Stale approve, request, decline; typed text kept.                                                                      |
+| E-2       | AC-3, AC-11, AC-27      | A, H  | Stale approve, request, decline; typed text kept, not auto-sent.                                                       |
 | E-3       | AC-10                   | A     | Concurrent resend: one revision created, no duplicate number.                                                          |
 | E-4       | AC-14                   | A, H  | Decline during editing: next save `NOT_EDITABLE`, builder shows the latest revision.                                   |
-| E-5       | AC-8                    | A     | Either ordering is valid; the loser gets `CONVERSATION_CLOSED`.                                                        |
+| E-5       | AC-8                    | A     | Concurrent chat and pay: chat sorts before the `paid` entry or gets `CONVERSATION_CLOSED`, never after it.             |
 | E-6       | AC-5                    | A     | Rollback leaves no revision, email or entry.                                                                           |
-| E-7       | AC-6                    | A     | Unchanged resend succeeds.                                                                                             |
-| E-8       | AC-9, AC-19             | A     |                                                                                                                        |
+| E-7       | AC-6                    | A     | Unchanged resend succeeds; note-only change labeled.                                                                   |
+| E-8       | AC-9, AC-19             | A     | Replay, replay after close, conflict, concurrent duplicate.                                                            |
 | E-9       | AC-2                    | H     | Member sees the last revision, the request and the "Your concierge" fallback.                                          |
 | E-10      | AC-2                    | A     | Same URL returns the latest revision.                                                                                  |
 | E-11      | AC-17                   | A     |                                                                                                                        |
-| E-12      | AC-8                    | A     | Post to a draft; list returns empty.                                                                                   |
+| E-12      | AC-8                    | A     | Chat to a draft; list returns empty.                                                                                   |
 | E-13      | FR-8 ordering test      | U     | Same-millisecond entries sort by id and stay stable across reads.                                                      |
 | E-14      | existing proposal tests | A     | Creating a new proposal for the reservation is existing behavior; no new test.                                         |
-| E-15      | AC-13                   | H     | Retried transition: `INVALID_TRANSITION`, then refetch, then success shown when status equals target.                  |
-| E-16      | AC-16                   | A     | Transitions succeed at the cap.                                                                                        |
+| E-15      | AC-28                   | H     | Retried transition: `INVALID_TRANSITION`, refetch, success only when a matching entry exists.                          |
+| E-16      | AC-16                   | A     | Chat gets `CONVERSATION_FULL`; transitions succeed at the cap.                                                         |
+| E-17      | AC-24                   | A     | Concurrent `PUT` and resend.                                                                                           |
+| E-18      | AC-27                   | H     | Text marked "written for revision N", sent only on a new tap.                                                          |
 
 ## J. Docs to update
 
 Per `AGENTS.md`, behavior changes update the matching doc in the same change.
 
-| Doc                     | Update                                                                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `proposal-lifecycle.md` | Six statuses, the edge table, editable statuses, the revision guard and error classification, the widened optimistic rule            |
-| `data-model.md`         | New entities, the working-copy vs. revision rule (and the `declined` exception), the repeatable-event rule, snapshot versioning      |
-| `api.md`                | New routes, the changed `PATCH` and `PUT` rules, new error codes and check order, `lastActivityAt`                                   |
-| `design.md`             | Member bar and sheets, conversation panel, the concierge's signature replacing "Your concierge", preview rule                        |
-| `product.md`            | "Proposal versioning" leaves out-of-scope. "Cancellation" is partly delivered (decline); expiry stays out. Add the new capabilities. |
-| `decisions.md`          | D-1 to D-14                                                                                                                          |
+| Doc                     | Update                                                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `proposal-lifecycle.md` | Six statuses, the edge table, editable statuses, the revision guard and error classification, conditional `PUT` and resend, the widened optimistic rule        |
+| `data-model.md`         | New entities, the working-copy vs. revision rule (and the `declined` exception), the repeatable-event rule, snapshot versioning, cover message on the revision |
+| `api.md`                | New routes, the member view response, the changed `PATCH` and `PUT` rules, new error codes and check order, `lastActivityAt`                                   |
+| `design.md`             | Member bar and sheets, displayed vs. latest banner, conversation panel, the concierge's signature replacing "Your concierge", preview rule                     |
+| `product.md`            | "Proposal versioning" leaves out-of-scope. "Cancellation" is partly delivered (decline); expiry stays out. Add the new capabilities.                           |
+| `decisions.md`          | D-1 to D-16                                                                                                                                                    |
 
 ## K. Rollout and migration
 
 One migration, no feature flag (single process, no external consumers).
 
 1. Create `ProposalRevision` and `ProposalMessage`. Add `Proposal.currentRevision` (default 0), `Proposal.declinedAt`, `SentEmail.revision`.
-2. **Backfill** every proposal that is not a `draft`: revision 1 from the current note and items (schema version 1), `currentRevision = 1`, and entries for `sent` (at `sentAt`) plus `approved` and `paid` where their timestamps exist. Set `SentEmail.revision = 1`.
-3. Deploy code that reads the member page from revisions.
+2. **Backfill in the migration SQL**, so it is atomic with the schema change and runs once under `migrate deploy`. SQLite's JSON functions build the items snapshot. Statements are guarded with `NOT EXISTS` so a re-run changes nothing, which keeps `npm run db:prepare` idempotent. For every proposal that is not a `draft`:
+   - Revision 1 from the current note and items (schema version 1), no cover message, no signature; `currentRevision = 1`; `SentEmail.revision = 1`.
+   - An entry for **every status it passed through**: `sent` at `sentAt` (fall back to `createdAt` if null), `approved` at `approvedAt`, `paid` at `paidAt`. Where a legacy timestamp is empty, fall back to `updatedAt`. This keeps "every transition has an entry" and "`lastActivityAt` is never null once sent" true for old rows.
+3. Deploy code that reads the member page from the member view endpoint.
 
 The old `PATCH` body had no `revision`, so the member client and the route ship together. Rollback is a code revert: the new tables and columns are additive and harmless to the old code.
 
@@ -352,18 +398,18 @@ Each slice leaves `npm run check` green and is shippable alone. A `plan.md` woul
 
 **P1**
 
-1. Schema, migration, backfill, seed.
+1. Schema, migration with the SQL backfill, seed.
 2. State machine as an edge list, with the exhaustive pair test.
-3. Revisions on send; the member page reads the latest revision.
-4. Revision guard on `PATCH` (`STALE_REVISION`) and error classification.
+3. Revisions on send; the member view endpoint; the member page reads it.
+4. Revision guard on `PATCH` (`STALE_REVISION`), error classification, conditional `PUT`.
 5. Request changes and decline.
-6. Resend, email and the change-summary function.
-7. Conversation read (the stream that records transitions).
-8. Member UI: request and decline sheet, "new version" banner driven by refetch.
+6. Resend (cover message and signature on the revision), email, the change-summary function.
+7. Conversation read and chat posting (`canPostChat`, chat-only cap, closed rule), not yet optimistic.
+8. Member UI: request and decline sheet, chat sheet, displayed vs. latest banner driven by refetch.
 9. Concierge UI: conversation tab, pending request, resend dialog, list updates.
 
 **P2**
 
-10. Chat posting, with idempotency, the closed rule and the chat-only cap.
+10. Chat idempotency (`clientId`) and optimistic chat with retry.
 11. Polling for member and concierge.
 12. Revision browsing for the concierge.
